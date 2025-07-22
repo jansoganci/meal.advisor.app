@@ -1,8 +1,8 @@
-import React from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { Colors } from '@/constants/Colors'
 import { useColorScheme } from '@/hooks/useColorScheme'
 import { ACTIVITY_LEVELS } from '@/types/onboarding'
+import React from 'react'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 interface ActivityLevelSliderProps {
   value: string
@@ -20,7 +20,7 @@ export const ActivityLevelSlider: React.FC<ActivityLevelSliderProps> = ({
     <View style={styles.container}>
       <Text style={[styles.title, { color: colors.text }]}>🏃‍♂️ Daily activity level</Text>
       <View style={styles.levelsContainer}>
-        {ACTIVITY_LEVELS.map((level, index) => {
+        {ACTIVITY_LEVELS.map((level) => {
           const isSelected = value === level.value
           return (
             <TouchableOpacity

@@ -1,7 +1,22 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { AuthContextType, AuthState, SignUpData, SignInData, User } from '@/types/auth'
-import { AuthService } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
+import { router } from 'expo-router'
+import React, { createContext, useContext, useEffect, useState } from 'react'
+
+interface User {
+  id: string
+  email: string
+}
+
+interface AuthContextType {
+  user: User | null
+  loading: boolean
+  error: string | null
+  signIn: (email: string, password: string) => Promise<void>
+  signUp: (email: string, password: string) => Promise<void>
+  signOut: () => Promise<void>
+  resetPassword: (email: string) => Promise<void>
+  clearError: () => void
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -18,39 +33,51 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    session: null,
-    loading: true,
-    error: null,
-  })
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Helper function to create user profile in database
+  const createUserProfile = async (userId: string, email: string) => {
+    try {
+      const { error: userCreationError } = await supabase
+        .from('users')
+        .upsert({
+          id: userId,
+          email: email,
+          preferred_language: 'en',
+          timezone: 'UTC',
+          notifications_enabled: true,
+          onboarding_completed: false
+        }, {
+          onConflict: 'id'
+        })
+
+      if (userCreationError) {
+        console.warn('User profile creation failed:', userCreationError.message)
+      } else {
+        console.log('User profile created successfully')
+      }
+    } catch (err) {
+      console.error('Error creating user profile:', err)
+    }
+  }
 
   useEffect(() => {
     // Check for existing session on app start
     const initializeAuth = async () => {
       try {
-        const sessionResult = await AuthService.getCurrentSession()
-        if (sessionResult.success && sessionResult.data) {
-          const userResult = await AuthService.getCurrentUser()
-          if (userResult.success && userResult.data) {
-            setAuthState(prev => ({
-              ...prev,
-              user: userResult.data,
-              session: sessionResult.data,
-              loading: false,
-            }))
-          } else {
-            setAuthState(prev => ({ ...prev, loading: false }))
-          }
-        } else {
-          setAuthState(prev => ({ ...prev, loading: false }))
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email!
+          })
         }
-      } catch (error) {
-        setAuthState(prev => ({
-          ...prev,
-          error: 'Failed to initialize authentication',
-          loading: false,
-        }))
+      } catch (err) {
+        console.error('Auth initialization error:', err)
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -59,28 +86,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          setAuthState(prev => ({
-            ...prev,
-            user: session.user as User,
-            session,
-            loading: false,
-            error: null,
-          }))
+        if (event === 'SIGNED_IN' && session?.user) {
+          const userId = session.user.id
+          const email = session.user.email!
+          
+          // Create user profile in database when user is authenticated
+          await createUserProfile(userId, email)
+          
+          setUser({
+            id: userId,
+            email: email
+          })
         } else if (event === 'SIGNED_OUT') {
-          setAuthState(prev => ({
-            ...prev,
-            user: null,
-            session: null,
-            loading: false,
-            error: null,
-          }))
-        } else if (event === 'TOKEN_REFRESHED' && session) {
-          setAuthState(prev => ({
-            ...prev,
-            session,
-          }))
+          setUser(null)
         }
+        setLoading(false)
       }
     )
 
@@ -89,113 +109,113 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [])
 
-  const signUp = async (data: SignUpData): Promise<boolean> => {
-    setAuthState(prev => ({ ...prev, loading: true, error: null }))
-    
-    const result = await AuthService.signUpWithEmail(data.email, data.password)
-    
-    if (result.success) {
-      setAuthState(prev => ({ ...prev, loading: false }))
-      return true
-    } else {
-      setAuthState(prev => ({
-        ...prev,
-        loading: false,
-        error: result.error || 'Sign up failed',
-      }))
-      return false
+  const signIn = async (email: string, password: string): Promise<void> => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) throw error
+
+      if (data.user) {
+        setUser({
+          id: data.user.id,
+          email: data.user.email!
+        })
+        // Navigate directly to main app for existing users
+        router.replace('/(tabs)')
+      }
+    } catch (err: any) {
+      setError(err.message || 'Sign in failed')
+      throw err
+    } finally {
+      setLoading(false)
     }
   }
 
-  const signIn = async (data: SignInData): Promise<boolean> => {
-    setAuthState(prev => ({ ...prev, loading: true, error: null }))
-    
-    const result = await AuthService.signInWithEmail(data.email, data.password)
-    
-    if (result.success) {
-      setAuthState(prev => ({ ...prev, loading: false }))
-      return true
-    } else {
-      setAuthState(prev => ({
-        ...prev,
-        loading: false,
-        error: result.error || 'Sign in failed',
-      }))
-      return false
+  const signUp = async (email: string, password: string): Promise<void> => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      })
+
+      if (error) throw error
+
+      if (data.user) {
+        // Don't create user profile here - wait for auth state change
+        // If email confirmation is required, profile will be created when user signs in
+        // If autoconfirm is enabled, profile will be created immediately via auth state change
+        setUser({
+          id: data.user.id,
+          email: data.user.email!
+        })
+        
+        // Check if email confirmation is required
+        if (data.session) {
+          // User is immediately authenticated (autoconfirm enabled)
+          router.replace('/(onboarding)/step1')
+        } else {
+          // Email confirmation required - user will be redirected after confirming email
+          // The auth state change listener will handle profile creation when they sign in
+          router.replace('/login')
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || 'Sign up failed')
+      throw err
+    } finally {
+      setLoading(false)
     }
   }
 
-  const signInWithGoogle = async (): Promise<boolean> => {
-    setAuthState(prev => ({ ...prev, loading: true, error: null }))
-    
-    const result = await AuthService.signInWithGoogle()
-    
-    if (result.success) {
-      setAuthState(prev => ({ ...prev, loading: false }))
-      return true
-    } else {
-      setAuthState(prev => ({
-        ...prev,
-        loading: false,
-        error: result.error || 'Google sign in failed',
-      }))
-      return false
+  const signOut = async (): Promise<void> => {
+    try {
+      setLoading(true)
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+      
+      setUser(null)
+      router.replace('/login')
+    } catch (err: any) {
+      setError(err.message || 'Sign out failed')
+    } finally {
+      setLoading(false)
     }
   }
 
-  const signOut = async (): Promise<boolean> => {
-    setAuthState(prev => ({ ...prev, loading: true, error: null }))
-    
-    const result = await AuthService.signOut()
-    
-    if (result.success) {
-      setAuthState(prev => ({
-        ...prev,
-        user: null,
-        session: null,
-        loading: false,
-      }))
-      return true
-    } else {
-      setAuthState(prev => ({
-        ...prev,
-        loading: false,
-        error: result.error || 'Sign out failed',
-      }))
-      return false
-    }
-  }
-
-  const resetPassword = async (email: string): Promise<boolean> => {
-    setAuthState(prev => ({ ...prev, loading: true, error: null }))
-    
-    const result = await AuthService.resetPassword(email)
-    
-    if (result.success) {
-      setAuthState(prev => ({ ...prev, loading: false }))
-      return true
-    } else {
-      setAuthState(prev => ({
-        ...prev,
-        loading: false,
-        error: result.error || 'Password reset failed',
-      }))
-      return false
+  const resetPassword = async (email: string): Promise<void> => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email)
+      if (error) throw error
+    } catch (err: any) {
+      setError(err.message || 'Password reset failed')
+      throw err
+    } finally {
+      setLoading(false)
     }
   }
 
   const clearError = () => {
-    setAuthState(prev => ({ ...prev, error: null }))
+    setError(null)
   }
 
   const value: AuthContextType = {
-    user: authState.user,
-    session: authState.session,
-    loading: authState.loading,
-    error: authState.error,
-    signUp,
+    user,
+    loading,
+    error,
     signIn,
-    signInWithGoogle,
+    signUp,
     signOut,
     resetPassword,
     clearError,

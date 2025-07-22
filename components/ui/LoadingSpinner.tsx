@@ -1,15 +1,13 @@
+import { StyledText, StyledView } from '@/lib/nativewind'
 import React from 'react'
-import { 
-  View, 
-  ActivityIndicator, 
-  Text, 
-  ViewProps 
+import {
+    ActivityIndicator,
+    ViewProps
 } from 'react-native'
-import { styled } from 'nativewind'
 
 // Styled components
-const StyledView = styled(View)
-const StyledText = styled(Text)
+// const StyledView = styled(View)
+// const StyledText = styled(Text)
 
 export interface LoadingSpinnerProps extends ViewProps {
   size?: 'small' | 'large'

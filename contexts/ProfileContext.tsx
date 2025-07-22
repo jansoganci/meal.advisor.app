@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { ProfileContextType, UserProfile, OnboardingData } from '@/types/profile'
 import { ProfileService } from '@/lib/profile'
+import { OnboardingData, ProfileContextType, UserProfile } from '@/types/profile'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 import { useAuth } from './AuthContext'
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined)
@@ -34,7 +34,8 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
 
   const createProfile = async (data: OnboardingData): Promise<boolean> => {
     if (!user) {
-      setError('No authenticated user')
+      console.error('❌ ProfileContext: No authenticated user found during profile creation')
+      setError('Please sign in first to create your profile')
       return false
     }
 
@@ -42,18 +43,22 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
     setError(null)
 
     try {
-      const result = await ProfileService.createProfile(user.id, data)
+      console.log('🚀 Creating profile for user:', user.id, 'with data:', data)
+      const result = await ProfileService.createProfile(user.id, data, user.email)
       
       if (result.success && result.data) {
+        console.log('✅ Profile creation successful in context')
         setProfile(result.data)
         setLoading(false)
         return true
       } else {
+        console.error('❌ Profile creation failed in context:', result.error)
         setError(result.error || 'Failed to create profile')
         setLoading(false)
         return false
       }
     } catch (err) {
+      console.error('❌ Unexpected error in ProfileContext.createProfile:', err)
       setError('An unexpected error occurred')
       setLoading(false)
       return false

@@ -1,9 +1,9 @@
+import { StyledText } from '@/lib/nativewind'
 import React from 'react'
-import { Text, TextProps } from 'react-native'
-import { styled } from 'nativewind'
+import { TextProps } from 'react-native'
 
 // Styled components
-const StyledText = styled(Text)
+// const StyledText = styled(Text)
 
 export interface TypographyProps extends TextProps {
   variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'body1' | 'body2' | 'caption' | 'overline'

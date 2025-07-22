@@ -1,12 +1,11 @@
+import { StyledImage, StyledTouchableOpacity, StyledView } from '@/lib/nativewind'
 import React from 'react'
-import { View, TouchableOpacity, Image } from 'react-native'
-import { styled } from 'nativewind'
-import { Card, Typography, Badge, Button } from '../ui'
+import { Badge, Button, Card, Typography } from '../ui'
 
 // Styled components
-const StyledView = styled(View)
-const StyledTouchableOpacity = styled(TouchableOpacity)
-const StyledImage = styled(Image)
+// const StyledView = styled(View)
+// const StyledTouchableOpacity = styled(TouchableOpacity)
+// const StyledImage = styled(Image)
 
 export interface Card1Props {
   title: string
@@ -61,7 +60,7 @@ const Card1: React.FC<Card1Props> = ({
             {/* Badge overlay */}
             {badge && (
               <StyledView className="absolute top-3 right-3">
-                <Badge variant={badge.variant} size="sm" rounded>
+                <Badge variant={badge.variant || 'default'} size="sm" rounded>
                   {badge.text}
                 </Badge>
               </StyledView>
@@ -89,7 +88,7 @@ const Card1: React.FC<Card1Props> = ({
                   variant="primary"
                   size="sm"
                   onPress={actions.primary.onPress}
-                  loading={actions.primary.loading}
+                  loading={actions.primary.loading || false}
                   className="flex-1"
                 >
                   {actions.primary.text}

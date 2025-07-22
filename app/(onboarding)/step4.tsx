@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react'
-import { View, ScrollView, StyleSheet, Alert } from 'react-native'
-import { router } from 'expo-router'
-import { OnboardingContainer } from '@/components/onboarding/OnboardingContainer'
-import { OnboardingButtons } from '@/components/onboarding/OnboardingButtons'
 import { ActivityLevelSlider } from '@/components/onboarding/ActivityLevelSlider'
 import { GoalSelection } from '@/components/onboarding/GoalSelection'
+import { OnboardingButtons } from '@/components/onboarding/OnboardingButtons'
+import { OnboardingContainer } from '@/components/onboarding/OnboardingContainer'
+import { useAuth } from '@/contexts/AuthContext'
 import { useOnboarding } from '@/contexts/OnboardingContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { OnboardingStep4Data } from '@/types/onboarding'
+import { router } from 'expo-router'
+import React, { useEffect, useState } from 'react'
+import { Alert, ScrollView, StyleSheet } from 'react-native'
 
 export default function OnboardingStep4() {
+  const { user } = useAuth()
   const { step4Data, setStep4Data, setCurrentStep, step1Data, step2Data, step3Data } = useOnboarding()
   const { createProfile } = useProfile()
   
@@ -19,10 +21,38 @@ export default function OnboardingStep4() {
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // Authentication checking is handled directly via user prop
 
   useEffect(() => {
     setCurrentStep(4)
-  }, [setCurrentStep])
+    
+    const checkAuthentication = async () => {
+      // Verify user is authenticated
+      console.log('🔐 Step 4: Authentication check:', {
+        userExists: !!user,
+        userId: user?.id,
+        userEmail: user?.email
+      })
+      
+      if (!user) {
+        console.log('⏳ Step 4: No user object, waiting for authentication...')
+        // User not authenticated
+        
+        if (!user) {
+          console.error('❌ Step 4: User not authenticated, redirecting to welcome')
+          Alert.alert('Authentication Required', 'Please sign in to complete your profile setup.', [
+            { text: 'OK', onPress: () => router.replace('/login') }
+          ])
+        } else {
+          console.log('✅ Step 4: User authentication confirmed')
+        }
+        
+        // Auth check complete
+      }
+    }
+
+    checkAuthentication()
+  }, [setCurrentStep, user])
 
   const handleActivityLevelChange = (level: string) => {
     setFormData(prev => ({ ...prev, activity_level: level as any }))
@@ -33,6 +63,15 @@ export default function OnboardingStep4() {
   }
 
   const handleComplete = async () => {
+    // Additional auth check before profile creation
+    if (!user) {
+      console.error('❌ Step 4: No authenticated user during profile creation')
+      Alert.alert('Authentication Required', 'Please sign in to create your profile.', [
+        { text: 'OK', onPress: () => router.replace('/welcome') }
+      ])
+      return
+    }
+
     if (!step1Data || !step2Data || !step3Data || !formData.activity_level || !formData.fitness_goal) {
       Alert.alert('Error', 'Please complete all steps before proceeding')
       return
@@ -51,15 +90,26 @@ export default function OnboardingStep4() {
         language: 'en', // Default language
       }
 
+      console.log('🎯 Step 4: Starting profile creation with data:', profileData)
+      console.log('🔐 Step 4: User authentication status:', {
+        userExists: !!user,
+        userId: user?.id,
+        userEmail: user?.email
+      })
+      
       const success = await createProfile(profileData)
+      console.log('🎯 Step 4: Profile creation result:', success)
 
       if (success) {
+        console.log('🎉 Profile created successfully, navigating to main app')
         // Navigate to main app
         router.replace('/(tabs)')
       } else {
+        console.error('❌ Step 4: Profile creation failed')
         Alert.alert('Error', 'Failed to create profile. Please try again.')
       }
     } catch (error) {
+      console.error('❌ Step 4: Unexpected error during profile creation:', error)
       Alert.alert('Error', 'An unexpected error occurred. Please try again.')
     } finally {
       setIsSubmitting(false)

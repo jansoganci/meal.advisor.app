@@ -1,10 +1,10 @@
+import { StyledText, StyledView } from '@/lib/nativewind'
 import React from 'react'
-import { View, Text, ViewProps } from 'react-native'
-import { styled } from 'nativewind'
+import { ViewProps } from 'react-native'
 
 // Styled components
-const StyledView = styled(View)
-const StyledText = styled(Text)
+// const StyledView = styled(View)
+// const StyledText = styled(Text)
 
 export interface BadgeProps extends ViewProps {
   variant?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info'

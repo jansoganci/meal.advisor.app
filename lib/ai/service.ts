@@ -1,20 +1,19 @@
-import type { 
-  AIRequest, 
-  AIResponse, 
-  AIProviderName, 
-  RecipeRequest, 
-  RecipeResponse,
-  MealPlanRequest,
-  MealPlanResponse,
-  CacheEntry,
-  UsageRecord
-} from './types'
-import { DeepSeekProvider } from './providers/deepseek'
-import { GeminiProvider } from './providers/gemini'
-import { AI_CONFIG, PROMPT_TEMPLATES, FALLBACK_RESPONSES, VALIDATION_SCHEMAS } from './config'
 import { AIServiceError, RateLimitError, ValidationError } from '../errors'
 import { security } from '../security'
-import { database } from '../database'
+import { AI_CONFIG, FALLBACK_RESPONSES, PROMPT_TEMPLATES, VALIDATION_SCHEMAS } from './config'
+import { DeepSeekProvider } from './providers/deepseek'
+import { GeminiProvider } from './providers/gemini'
+import type {
+  AIProviderName,
+  AIRequest,
+  AIResponse,
+  CacheEntry,
+  MealPlanRequest,
+  MealPlanResponse,
+  RecipeRequest,
+  RecipeResponse,
+  UsageRecord
+} from './types'
 
 export class AIService {
   private providers: Map<AIProviderName, any>
@@ -149,8 +148,8 @@ export class AIService {
     const prompt = this.buildPrompt(template, {
       mealType: request.mealType,
       cuisineType: request.cuisineType || 'any',
-      servings: request.servings || 2,
-      maxCookingTime: request.maxCookingTime || 60,
+      servings: request.servings?.toString() || '2',
+      maxCookingTime: request.maxCookingTime?.toString() || '60',
       difficulty: request.difficulty || 'medium',
       dietaryRestrictions: request.dietaryRestrictions?.join(', ') || 'none',
       allergies: request.allergies?.join(', ') || 'none',
@@ -184,11 +183,11 @@ export class AIService {
     const prompt = this.buildPrompt(template, {
       activityLevel: request.preferences.activityLevel,
       primaryGoal: request.preferences.primaryGoal,
-      dailyCalories: request.preferences.dailyCalories,
+      dailyCalories: request.preferences.dailyCalories.toString(),
       macroTargets: JSON.stringify(request.preferences.macroTargets),
       startDate: request.planDetails.startDate,
       endDate: request.planDetails.endDate,
-      mealsPerDay: request.planDetails.mealsPerDay,
+      mealsPerDay: request.planDetails.mealsPerDay.toString(),
       cookingTimePreference: request.planDetails.cookingTimePreference,
       difficultyPreference: request.planDetails.difficultyPreference,
       dietaryRestrictions: request.preferences.dietaryRestrictions.join(', '),
@@ -442,7 +441,9 @@ export class AIService {
     if (this.cache.size >= AI_CONFIG.caching.maxSize) {
       // Remove oldest entry
       const oldestKey = this.cache.keys().next().value
-      this.cache.delete(oldestKey)
+      if (oldestKey) {
+        this.cache.delete(oldestKey)
+      }
     }
 
     this.cache.set(key, {
@@ -465,7 +466,7 @@ export class AIService {
         totalTokens: 0
       },
       cost: 0,
-      requestId: request.requestId,
+      requestId: request.requestId || '',
       timestamp: new Date().toISOString()
     }
   }

@@ -29,3 +29,27 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: false,
   },
 })
+
+// Add logging at the end of the file
+console.log('🔗 Supabase client initialized:', {
+  url: supabaseUrl?.substring(0, 30) + '...',
+  hasAnonKey: !!supabaseAnonKey,
+  hasUrl: !!supabaseUrl,
+  client: !!supabase
+})
+
+// Test connection on startup
+const testConnection = async () => {
+  try {
+    const { data, error } = await supabase.from('users').select('id').limit(1)
+    if (error) {
+      console.error('❌ Supabase connection test failed:', error)
+    } else {
+      console.log('✅ Supabase connection test successful')
+    }
+  } catch (err) {
+    console.error('❌ Supabase connection test error:', err)
+  }
+}
+
+testConnection()

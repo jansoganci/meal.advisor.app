@@ -1,6 +1,6 @@
-import type { AIRequest, AIResponse, AIError } from '../types'
+import { AIServiceError } from '../../errors'
 import { AI_CONFIG, COST_RATES } from '../config'
-import { AIServiceError, NetworkError } from '../../errors'
+import type { AIError, AIRequest, AIResponse } from '../types'
 
 export class DeepSeekProvider {
   private apiKey: string
@@ -8,9 +8,9 @@ export class DeepSeekProvider {
   private model: string
 
   constructor() {
-    this.apiKey = AI_CONFIG.providers.deepseek.apiKey
-    this.baseUrl = AI_CONFIG.providers.deepseek.baseUrl
-    this.model = AI_CONFIG.providers.deepseek.model
+    this.apiKey = AI_CONFIG.providers.deepseek.apiKey || ''
+    this.baseUrl = AI_CONFIG.providers.deepseek.baseUrl || ''
+    this.model = AI_CONFIG.providers.deepseek.model || ''
 
     if (!this.apiKey) {
       throw new AIServiceError('DeepSeek API key is not configured')
@@ -34,7 +34,7 @@ export class DeepSeekProvider {
           totalTokens: response.usage.total_tokens
         },
         cost: this.calculateCost(response.usage),
-        requestId: request.requestId,
+        requestId: request.requestId || '',
         timestamp: new Date().toISOString()
       }
     } catch (error) {

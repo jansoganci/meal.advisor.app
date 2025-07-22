@@ -1,17 +1,14 @@
+import { StyledText, StyledTouchableOpacity, StyledView } from '@/lib/nativewind'
 import React from 'react'
-import { 
-  TouchableOpacity, 
-  Text, 
-  ActivityIndicator, 
-  View,
-  TouchableOpacityProps 
+import {
+  ActivityIndicator,
+  TouchableOpacityProps
 } from 'react-native'
-import { styled } from 'nativewind'
 
 // Styled components
-const StyledTouchableOpacity = styled(TouchableOpacity)
-const StyledText = styled(Text)
-const StyledView = styled(View)
+// const StyledTouchableOpacity = styled(TouchableOpacity)
+// const StyledText = styled(Text)
+// const StyledView = styled(View)
 
 export interface ButtonProps extends TouchableOpacityProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'

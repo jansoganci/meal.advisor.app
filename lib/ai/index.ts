@@ -1,36 +1,22 @@
 // AI Service - Main export file
-export { aiService } from './service'
-export { AIService } from './service'
 export { DeepSeekProvider } from './providers/deepseek'
 export { GeminiProvider } from './providers/gemini'
+export { aiService, AIService } from './service'
 
 // Export types
 export type {
-  AIProvider,
-  AIRequest,
-  AIResponse,
-  AIError,
-  AIProviderName,
-  AIServiceConfig,
-  RecipeRequest,
-  RecipeResponse,
-  MealPlanRequest,
-  MealPlanResponse,
-  PromptTemplate,
-  UsageRecord,
-  CacheEntry,
-  RequestType,
-  DifficultyLevel,
-  MealType,
-  CuisineType,
-  DietaryRestriction,
-  SpiceLevel,
-  ActivityLevel,
-  PrimaryGoal
+  ActivityLevel, AIError, AIProvider, AIProviderName, AIRequest,
+  AIResponse, AIServiceConfig, CacheEntry, CuisineType,
+  DietaryRestriction, DifficultyLevel, MealPlanRequest,
+  MealPlanResponse, MealType, PrimaryGoal, PromptTemplate, RecipeRequest,
+  RecipeResponse, RequestType, SpiceLevel, UsageRecord
 } from './types'
 
 // Export configuration
-export { AI_CONFIG, PROMPT_TEMPLATES, COST_RATES, AI_ERROR_CODES } from './config'
+export { AI_CONFIG, AI_ERROR_CODES, COST_RATES, PROMPT_TEMPLATES } from './config'
+
+// Import aiService and types
+import { aiService } from './service'
 
 // Convenience functions for common AI operations
 export const ai = {
@@ -132,10 +118,10 @@ export const ai = {
   } = {}) {
     return await aiService.generateResponse({
       prompt,
-      userId: options.userId,
-      model: options.model,
-      temperature: options.temperature,
-      maxTokens: options.maxTokens
+      ...(options.userId !== undefined && { userId: options.userId }),
+      ...(options.model !== undefined && { model: options.model }),
+      ...(options.temperature !== undefined && { temperature: options.temperature }),
+      ...(options.maxTokens !== undefined && { maxTokens: options.maxTokens })
     })
   }
 }

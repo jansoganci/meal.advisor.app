@@ -1,5 +1,5 @@
+import type { Href } from 'expo-router';
 import { router } from 'expo-router';
-import { Href } from 'expo-router/build/link/href';
 
 // Navigation utilities for consistent routing
 export class NavigationService {
@@ -30,9 +30,9 @@ export class NavigationService {
     router.replace('/(onboarding)/step1');
   }
 
-  // Navigate to welcome screen
-  static goToWelcome() {
-    router.replace('/welcome');
+  // Navigate to login screen
+  static goToLogin() {
+    router.replace('/login');
   }
 
   // Navigate to profile editing
@@ -105,7 +105,7 @@ export class DeepLinkService {
 // Route constants for consistent navigation
 export const Routes = {
   // Auth routes
-  WELCOME: '/welcome',
+  LOGIN: '/login',
   
   // Onboarding routes
   ONBOARDING_STEP_1: '/(onboarding)/step1',

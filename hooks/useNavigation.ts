@@ -1,6 +1,6 @@
-import { useRouter, usePathname, useLocalSearchParams } from 'expo-router';
-import { useCallback } from 'react';
 import { NavigationService, Routes } from '@/lib/navigation';
+import { useLocalSearchParams, usePathname, useRouter } from 'expo-router';
+import { useCallback } from 'react';
 
 // Enhanced navigation hook with utilities
 export function useAppNavigation() {
@@ -28,7 +28,7 @@ export function useAppNavigation() {
   // Navigate to specific sections
   const navigation = {
     // Auth navigation
-    goToWelcome: () => navigateWithTracking(Routes.WELCOME),
+    goToLogin: () => navigateWithTracking(Routes.LOGIN),
     goToOnboarding: () => navigateWithTracking(Routes.ONBOARDING_STEP_1),
     
     // Main navigation
@@ -54,6 +54,7 @@ export function useAppNavigation() {
 
   return {
     ...navigation,
+    navigateWithTracking,
     currentRoute: pathname,
     searchParams,
     isCurrentRoute: (route: string) => pathname === route,
@@ -70,7 +71,7 @@ export function useCurrentRoute() {
     const segments = pathname.split('/').filter(Boolean);
     const isTabRoute = segments.includes('(tabs)');
     const isOnboardingRoute = segments.includes('(onboarding)');
-    const isAuthRoute = pathname === Routes.WELCOME;
+    const isAuthRoute = pathname === Routes.LOGIN;
     
     return {
       pathname,
@@ -86,6 +87,7 @@ export function useCurrentRoute() {
 
   return {
     ...getRouteInfo(),
+    currentRoute: pathname,
     searchParams,
   };
 }

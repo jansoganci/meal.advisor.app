@@ -1,11 +1,10 @@
+import { StyledTouchableOpacity, StyledView } from '@/lib/nativewind'
 import React from 'react'
-import { View, TouchableOpacity } from 'react-native'
-import { styled } from 'nativewind'
-import { Card, Typography, Badge } from '../ui'
+import { Badge, Card, Typography } from '../ui'
 
 // Styled components
-const StyledView = styled(View)
-const StyledTouchableOpacity = styled(TouchableOpacity)
+// const StyledView = styled(View)
+// const StyledTouchableOpacity = styled(TouchableOpacity)
 
 export interface Card2Props {
   title: string

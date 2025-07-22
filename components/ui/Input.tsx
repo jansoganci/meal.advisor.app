@@ -1,18 +1,14 @@
+import { StyledText, StyledTextInput, StyledView } from '@/lib/nativewind'
 import React, { useState } from 'react'
-import { 
-  TextInput, 
-  View, 
-  Text, 
-  TouchableOpacity,
-  TextInputProps 
+import {
+  TextInputProps
 } from 'react-native'
-import { styled } from 'nativewind'
 
 // Styled components
-const StyledView = styled(View)
-const StyledTextInput = styled(TextInput)
-const StyledText = styled(Text)
-const StyledTouchableOpacity = styled(TouchableOpacity)
+// const StyledView = styled(View)
+// const StyledTextInput = styled(TextInput)
+// const StyledText = styled(Text)
+// const StyledTouchableOpacity = styled(TouchableOpacity)
 
 export interface InputProps extends TextInputProps {
   label?: string

@@ -4,15 +4,12 @@ import { StatsCard } from '@/components/profile/StatsCard'
 import { Colors } from '@/constants/Colors'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
-import { useColorScheme } from '@/hooks/useColorScheme'
 import { router } from 'expo-router'
 import React, { useState } from 'react'
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function ProfileScreen() {
-  const colorScheme = useColorScheme()
-  const colors = Colors.light
   const { user, signOut } = useAuth()
   const { profile, loading } = useProfile()
   const [isSigningOut, setIsSigningOut] = useState(false)
@@ -42,19 +39,19 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: Colors.light.background }]}>
         <View style={styles.loadingContainer}>
-          <Text style={[styles.loadingText, { color: colors.text }]}>Loading profile...</Text>
+          <Text style={[styles.loadingText, { color: Colors.light.text }]}>Loading profile...</Text>
         </View>
       </SafeAreaView>
     )
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: Colors.light.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>👤 Profile</Text>
+          <Text style={[styles.title, { color: Colors.light.text }]}>👤 Profile</Text>
         </View>
 
         <View style={styles.content}>

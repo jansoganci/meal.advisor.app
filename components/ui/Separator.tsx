@@ -1,9 +1,9 @@
+import { StyledView } from '@/lib/nativewind'
 import React from 'react'
-import { View, ViewProps } from 'react-native'
-import { styled } from 'nativewind'
+import { ViewProps } from 'react-native'
 
 // Styled components
-const StyledView = styled(View)
+// const StyledView = styled(View)
 
 export interface SeparatorProps extends ViewProps {
   orientation?: 'horizontal' | 'vertical'

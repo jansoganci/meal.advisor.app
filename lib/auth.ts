@@ -1,5 +1,4 @@
 import { supabase } from './supabase'
-import { AuthError, AuthResponse } from '@supabase/supabase-js'
 
 export interface AuthResult {
   success: boolean
@@ -43,26 +42,6 @@ export class AuthService {
     }
   }
 
-  // Google OAuth authentication
-  static async signInWithGoogle(): Promise<AuthResult> {
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: 'com.mealadvisor://auth/callback',
-        },
-      })
-
-      if (error) {
-        return { success: false, error: error.message }
-      }
-
-      return { success: true, data }
-    } catch (err) {
-      return { success: false, error: 'An unexpected error occurred' }
-    }
-  }
-
   // Sign out
   static async signOut(): Promise<AuthResult> {
     try {
@@ -81,9 +60,7 @@ export class AuthService {
   // Password reset
   static async resetPassword(email: string): Promise<AuthResult> {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'com.mealadvisor://auth/reset-password',
-      })
+      const { error } = await supabase.auth.resetPasswordForEmail(email)
 
       if (error) {
         return { success: false, error: error.message }

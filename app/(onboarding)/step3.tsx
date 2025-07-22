@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react'
-import { View, ScrollView, StyleSheet } from 'react-native'
-import { router } from 'expo-router'
-import { OnboardingContainer } from '@/components/onboarding/OnboardingContainer'
-import { OnboardingButtons } from '@/components/onboarding/OnboardingButtons'
 import { CheckboxList } from '@/components/onboarding/CheckboxList'
+import { OnboardingButtons } from '@/components/onboarding/OnboardingButtons'
+import { OnboardingContainer } from '@/components/onboarding/OnboardingContainer'
 import { useOnboarding } from '@/contexts/OnboardingContext'
-import { OnboardingStep3Data, ALLERGY_OPTIONS, CHRONIC_ILLNESS_OPTIONS } from '@/types/onboarding'
+import { ALLERGY_OPTIONS, CHRONIC_ILLNESS_OPTIONS, OnboardingStep3Data } from '@/types/onboarding'
+import { router } from 'expo-router'
+import React, { useEffect, useState } from 'react'
+import { ScrollView, StyleSheet } from 'react-native'
 
 export default function OnboardingStep3() {
   const { step3Data, setStep3Data, setCurrentStep } = useOnboarding()

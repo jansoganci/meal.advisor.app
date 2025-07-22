@@ -1,5 +1,5 @@
-import { supabase } from './supabase'
 import type { Database } from '@/types/database'
+import { supabase } from './supabase'
 
 // Database types
 export type Tables = Database['public']['Tables']
@@ -157,7 +157,7 @@ export const database = {
         return []
       }
       
-      return data.map(item => item.recipes).filter(Boolean) as Recipe[]
+      return data.map(item => item.recipes).filter(Boolean) as unknown as Recipe[]
     },
 
     async addToFavorites(userId: string, recipeId: string): Promise<boolean> {

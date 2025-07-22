@@ -216,6 +216,62 @@ export const Colors = {
     ...ColorPalette.mealType,
     ...ColorPalette.difficulty,
     ...ColorPalette.spice
+  },
+  dark: {
+    text: ColorPalette.neutral.white,
+    background: ColorPalette.secondary[900],
+    tint: ColorPalette.primary[400],
+    icon: ColorPalette.secondary[300],
+    tabIconDefault: ColorPalette.secondary[500],
+    tabIconSelected: ColorPalette.primary[400],
+    
+    // Semantic colors
+    primary: ColorPalette.primary[400],
+    secondary: ColorPalette.secondary[400],
+    success: ColorPalette.success[400],
+    error: ColorPalette.error[400],
+    warning: ColorPalette.warning[400],
+    info: ColorPalette.info[400],
+    
+    // Background variations
+    backgroundSecondary: ColorPalette.secondary[800],
+    backgroundTertiary: ColorPalette.secondary[700],
+    
+    // Text variations
+    textSecondary: ColorPalette.secondary[300],
+    textTertiary: ColorPalette.secondary[400],
+    textDisabled: ColorPalette.secondary[600],
+    textInverse: ColorPalette.secondary[900],
+    
+    // Border colors
+    border: ColorPalette.secondary[700],
+    borderSecondary: ColorPalette.secondary[600],
+    borderFocus: ColorPalette.primary[400],
+    
+    // Shadow colors
+    shadow: 'rgba(0, 0, 0, 0.3)',
+    shadowMedium: 'rgba(0, 0, 0, 0.4)',
+    shadowDark: 'rgba(0, 0, 0, 0.5)',
+    
+    // Component-specific colors
+    cardBackground: ColorPalette.secondary[800],
+    modalBackground: 'rgba(0, 0, 0, 0.7)',
+    inputBackground: ColorPalette.secondary[800],
+    inputBorder: ColorPalette.secondary[600],
+    buttonPrimary: ColorPalette.primary[500],
+    buttonSecondary: ColorPalette.secondary[700],
+    
+    // Status colors
+    online: ColorPalette.success[400],
+    offline: ColorPalette.secondary[500],
+    
+    // Nutrition & food colors
+    ...ColorPalette.nutrition,
+    ...ColorPalette.dietary,
+    ...ColorPalette.cuisine,
+    ...ColorPalette.mealType,
+    ...ColorPalette.difficulty,
+    ...ColorPalette.spice
   }
 } as const
 

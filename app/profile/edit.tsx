@@ -7,7 +7,6 @@ import { HeightPicker } from '@/components/onboarding/HeightPicker'
 import { WeightPicker } from '@/components/onboarding/WeightPicker'
 import { Colors } from '@/constants/Colors'
 import { useProfile } from '@/contexts/ProfileContext'
-import { useColorScheme } from '@/hooks/useColorScheme'
 import { ALLERGY_OPTIONS, CHRONIC_ILLNESS_OPTIONS } from '@/types/onboarding'
 import { UserProfile } from '@/types/profile'
 import { router } from 'expo-router'
@@ -16,7 +15,6 @@ import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function EditProfileScreen() {
-  const colorScheme = useColorScheme()
   const colors = Colors.light
   const { profile, updateProfile, loading } = useProfile()
   

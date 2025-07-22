@@ -261,7 +261,8 @@ INSERT INTO public.recipes (
   TRUE,
   TRUE,
   FALSE
-);
+)
+ON CONFLICT (id) DO NOTHING;
 
 -- Insert sample dietary tags and cuisine types for reference
 INSERT INTO public.recipe_tags (recipe_id, tag_name, tag_category) VALUES
@@ -288,34 +289,8 @@ INSERT INTO public.recipe_tags (recipe_id, tag_name, tag_category) VALUES
 -- Avocado Toast tags
 ('550e8400-e29b-41d4-a716-446655440005', 'quick', 'time'),
 ('550e8400-e29b-41d4-a716-446655440005', 'healthy-fats', 'nutrition'),
-('550e8400-e29b-41d4-a716-446655440005', 'trendy', 'style');
-
--- Insert sample common allergies for reference
-INSERT INTO public.user_food_preferences (user_id, food_name, food_category, preference_level, context_notes) VALUES
--- These will be used as templates/common options
-('00000000-0000-0000-0000-000000000000', 'Eggs', 'protein', 'neutral', 'Common allergen'),
-('00000000-0000-0000-0000-000000000000', 'Milk', 'dairy', 'neutral', 'Common allergen'),
-('00000000-0000-0000-0000-000000000000', 'Peanuts', 'nuts', 'neutral', 'Common allergen'),
-('00000000-0000-0000-0000-000000000000', 'Tree nuts', 'nuts', 'neutral', 'Common allergen'),
-('00000000-0000-0000-0000-000000000000', 'Shellfish', 'seafood', 'neutral', 'Common allergen'),
-('00000000-0000-0000-0000-000000000000', 'Fish', 'seafood', 'neutral', 'Common allergen'),
-('00000000-0000-0000-0000-000000000000', 'Soy', 'legume', 'neutral', 'Common allergen'),
-('00000000-0000-0000-0000-000000000000', 'Wheat', 'grain', 'neutral', 'Common allergen')
-ON CONFLICT (user_id, food_name) DO NOTHING;
-
--- Insert sample cuisine preferences for reference
-INSERT INTO public.user_cuisine_preferences (user_id, cuisine_name, preference_level, familiarity_level, frequency_preference) VALUES
-('00000000-0000-0000-0000-000000000000', 'Italian', 'neutral', 'familiar', 'occasionally'),
-('00000000-0000-0000-0000-000000000000', 'Mexican', 'neutral', 'familiar', 'occasionally'),
-('00000000-0000-0000-0000-000000000000', 'Chinese', 'neutral', 'familiar', 'occasionally'),
-('00000000-0000-0000-0000-000000000000', 'Indian', 'neutral', 'familiar', 'occasionally'),
-('00000000-0000-0000-0000-000000000000', 'Thai', 'neutral', 'familiar', 'occasionally'),
-('00000000-0000-0000-0000-000000000000', 'Mediterranean', 'neutral', 'familiar', 'occasionally'),
-('00000000-0000-0000-0000-000000000000', 'American', 'neutral', 'familiar', 'occasionally'),
-('00000000-0000-0000-0000-000000000000', 'French', 'neutral', 'familiar', 'occasionally'),
-('00000000-0000-0000-0000-000000000000', 'Japanese', 'neutral', 'familiar', 'occasionally'),
-('00000000-0000-0000-0000-000000000000', 'Korean', 'neutral', 'familiar', 'occasionally')
-ON CONFLICT (user_id, cuisine_name) DO NOTHING;
+('550e8400-e29b-41d4-a716-446655440005', 'trendy', 'style')
+ON CONFLICT (recipe_id, tag_name) DO NOTHING;
 
 -- Update recipe statistics to simulate real usage
 UPDATE public.recipes SET
@@ -324,50 +299,6 @@ UPDATE public.recipes SET
   rating_count = FLOOR(RANDOM() * 50 + 5)
 WHERE is_curated = TRUE;
 
--- Create a sample admin user (for testing purposes)
--- Note: This should be removed in production
-INSERT INTO public.users (
-  id,
-  email,
-  full_name,
-  age,
-  gender,
-  height_cm,
-  weight_kg,
-  activity_level,
-  primary_goal,
-  dietary_preferences,
-  cuisine_preferences,
-  allergies,
-  chronic_illnesses,
-  daily_calories,
-  daily_protein_g,
-  daily_carbs_g,
-  daily_fat_g,
-  onboarding_completed
-) VALUES (
-  '00000000-0000-0000-0000-000000000001',
-  'admin@mealadvisor.com',
-  'Admin User',
-  30,
-  'other',
-  175,
-  70.0,
-  'moderately_active',
-  'maintain_weight',
-  ARRAY['balanced'],
-  ARRAY['mediterranean', 'italian'],
-  ARRAY[]::TEXT[],
-  ARRAY[]::TEXT[],
-  2000,
-  125,
-  225,
-  67,
-  TRUE
-) ON CONFLICT (id) DO NOTHING;
-
 -- Comments
 COMMENT ON TABLE public.recipes IS 'This table now contains curated seed recipes for fallback content';
 COMMENT ON TABLE public.recipe_tags IS 'This table now contains sample tags for the curated recipes';
-COMMENT ON TABLE public.user_food_preferences IS 'This table now contains reference data for common food preferences';
-COMMENT ON TABLE public.user_cuisine_preferences IS 'This table now contains reference data for common cuisine preferences';

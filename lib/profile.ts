@@ -1,6 +1,6 @@
+import { OnboardingData, UserProfile } from '@/types/profile'
 import { supabase } from './supabase'
-import { UserProfile, OnboardingData } from '@/types/profile'
-import { ValidationService, SanitizationService } from './validation'
+import { SanitizationService, ValidationService } from './validation'
 
 export interface ProfileResult {
   success: boolean
@@ -15,14 +15,73 @@ export interface NutritionGoals {
 
 export class ProfileService {
   // Create user profile after onboarding
-  static async createProfile(userId: string, data: OnboardingData): Promise<ProfileResult> {
+  static async createProfile(userId: string, data: OnboardingData, userEmail?: string): Promise<ProfileResult> {
     try {
+      console.log('🔍 ProfileService.createProfile called with:', {
+        userId,
+        userEmail,
+        data,
+        hasAge: !!data.age,
+        hasGender: !!data.gender,
+        hasHeight: !!data.height,
+        hasWeight: !!data.weight,
+        hasActivityLevel: !!data.activity_level,
+        hasFitnessGoal: !!data.fitness_goal
+      })
+
+      // Check if user exists in database first
+      const { data: existingUser, error: userCheckError } = await supabase
+        .from('users')
+        .select('id, email')
+        .eq('id', userId)
+        .single()
+      
+      console.log('👤 User check result:', { existingUser, userCheckError })
+
+      // If user doesn't exist, create them first
+      if (userCheckError?.code === 'PGRST116' || !existingUser) {
+        console.log('🆕 User does not exist in database, creating user record first...')
+        const { data: newUser, error: createUserError } = await supabase
+          .from('users')
+          .insert([{ 
+            id: userId, 
+            email: userEmail || 'unknown@email.com'
+          }])
+          .select()
+          .single()
+        
+        console.log('🆕 User creation result:', { newUser, createUserError })
+        
+        if (createUserError) {
+          console.error('❌ Failed to create user record:', createUserError)
+          return { success: false, error: `Failed to create user record: ${createUserError.message}` }
+        }
+      }
+
+      // Basic data validation before sanitization
+      if (!data.age || !data.gender || !data.height || !data.weight || !data.activity_level || !data.fitness_goal) {
+        const missing = []
+        if (!data.age) missing.push('age')
+        if (!data.gender) missing.push('gender') 
+        if (!data.height) missing.push('height')
+        if (!data.weight) missing.push('weight')
+        if (!data.activity_level) missing.push('activity_level')
+        if (!data.fitness_goal) missing.push('fitness_goal')
+        
+        console.error('❌ Missing required onboarding data:', missing)
+        return { success: false, error: `Missing required data: ${missing.join(', ')}` }
+      }
+
       // Sanitize input data
+      console.log('🧹 Sanitizing onboarding data...')
       const sanitizedData = SanitizationService.sanitizeOnboardingData(data)
+      console.log('🧹 Sanitized data:', sanitizedData)
 
       // Validate input data
       const validation = ValidationService.validateOnboardingData(sanitizedData)
+      console.log('✅ Validation result:', validation)
       if (!validation.isValid) {
+        console.error('❌ Validation failed:', validation.errors)
         return { success: false, error: validation.errors.join(', ') }
       }
 
@@ -36,34 +95,126 @@ export class ProfileService {
         sanitizedData.fitness_goal
       )
 
+      // Map onboarding data to database schema
+      const mapFitnessGoal = (goal: string) => {
+        switch (goal) {
+          case 'maintain': return 'maintain_weight'
+          case 'lose_weight': return 'lose_weight'
+          case 'gain_weight': return 'gain_weight'
+          case 'build_muscle': return 'build_muscle'
+          default: return 'maintain_weight'
+        }
+      }
+
+      // Update the existing user record created by the auth trigger
       const profileData = {
-        id: userId,
         age: sanitizedData.age,
         gender: sanitizedData.gender,
-        height: sanitizedData.height,
-        weight: sanitizedData.weight,
+        height_cm: sanitizedData.height,
+        weight_kg: sanitizedData.weight,
         allergies: sanitizedData.allergies || [],
         chronic_illnesses: sanitizedData.chronic_illnesses || [],
         activity_level: sanitizedData.activity_level,
-        fitness_goal: sanitizedData.fitness_goal,
-        language: sanitizedData.language || 'en',
-        is_premium: false,
-        daily_calorie_goal: nutritionGoals.daily_calories,
-        daily_protein_goal: nutritionGoals.daily_protein,
+        primary_goal: mapFitnessGoal(sanitizedData.fitness_goal),
+        preferred_language: sanitizedData.language || 'en',
+        daily_calories: nutritionGoals.daily_calories,
+        daily_protein_g: nutritionGoals.daily_protein,
+        onboarding_completed: true,
+        updated_at: new Date().toISOString(),
       }
 
+      console.log('📝 Final profile data to update:', profileData)
+
+      // Validate against database constraints
+      console.log('🔍 Validating data against database constraints...')
+      const constraintValidation = {
+        age: sanitizedData.age >= 13 && sanitizedData.age <= 120,
+        height: sanitizedData.height >= 100 && sanitizedData.height <= 250,
+        weight: sanitizedData.weight >= 30 && sanitizedData.weight <= 300,
+        activity_level: ['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active'].includes(sanitizedData.activity_level),
+        primary_goal: ['lose_weight', 'maintain_weight', 'gain_weight', 'build_muscle', 'improve_health'].includes(mapFitnessGoal(sanitizedData.fitness_goal)),
+        daily_calories: nutritionGoals.daily_calories >= 1000 && nutritionGoals.daily_calories <= 4000,
+        daily_protein: nutritionGoals.daily_protein >= 20 && nutritionGoals.daily_protein <= 300
+      }
+      console.log('🔍 Constraint validation results:', constraintValidation)
+      
+      const failedConstraints = Object.entries(constraintValidation)
+        .filter(([_, isValid]) => !isValid)
+        .map(([field, _]) => field)
+      
+      if (failedConstraints.length > 0) {
+        console.error('❌ Failed database constraints:', failedConstraints)
+        return { success: false, error: `Data validation failed for: ${failedConstraints.join(', ')}` }
+      }
+
+      // Test Supabase connection first
+      console.log('🔗 Testing Supabase connection...')
+      const { data: connectionTest, error: connectionError } = await supabase
+        .from('users')
+        .select('id')
+        .limit(1)
+      
+      console.log('🔗 Connection test result:', { connectionTest, connectionError })
+      
+      if (connectionError) {
+        console.error('❌ Supabase connection failed:', connectionError)
+        return { success: false, error: `Database connection failed: ${connectionError.message}` }
+      }
+
+      // Test if we can read the specific user record first
+      console.log('🔍 Testing user record access...')
+      const { data: userRecord, error: userReadError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single()
+      
+      console.log('🔍 User record test result:', { 
+        userRecord: userRecord ? 'Found user record' : 'No user record',
+        userReadError: userReadError ? userReadError.message : 'No error',
+        userId 
+      })
+
       const { data: profile, error } = await supabase
-        .from('profiles')
-        .insert([profileData])
+        .from('users')
+        .update(profileData)
+        .eq('id', userId)
         .select()
         .single()
 
       if (error) {
-        return { success: false, error: error.message }
+        console.error('❌ SUPABASE ERROR in createProfile:', {
+          error: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint,
+          userId,
+          profileData,
+          fullError: JSON.stringify(error, null, 2)
+        })
+        
+        // Let's also try to get the current user from Supabase to check auth
+        const { data: authUser, error: authError } = await supabase.auth.getUser()
+        console.error('❌ Auth check during error:', {
+          authUser: authUser?.user?.id,
+          authError,
+          expectedUserId: userId,
+          idsMatch: authUser?.user?.id === userId
+        })
+        
+        return { success: false, error: `Database error: ${error.message} (Code: ${error.code})` }
       }
 
+      console.log('✅ Profile created successfully:', profile)
       return { success: true, data: profile as UserProfile }
     } catch (err) {
+      console.error('❌ UNEXPECTED ERROR in createProfile:', {
+        error: err,
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : 'No stack trace',
+        userId,
+        data
+      })
       return { success: false, error: 'Failed to create profile' }
     }
   }
@@ -72,7 +223,7 @@ export class ProfileService {
   static async getProfile(userId: string): Promise<ProfileResult> {
     try {
       const { data: profile, error } = await supabase
-        .from('profiles')
+        .from('users')
         .select('*')
         .eq('id', userId)
         .single()
@@ -124,7 +275,7 @@ export class ProfileService {
       }
 
       const { data: profile, error } = await supabase
-        .from('profiles')
+        .from('users')
         .update({
           ...sanitizedUpdates,
           updated_at: new Date().toISOString(),
@@ -147,7 +298,7 @@ export class ProfileService {
   static async profileExists(userId: string): Promise<boolean> {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('users')
         .select('id')
         .eq('id', userId)
         .single()
@@ -288,7 +439,7 @@ export class ProfileService {
   static async updateUserPreferences(userId: string, preferences: Record<string, any>): Promise<ProfileResult> {
     try {
       const { data: profile, error } = await supabase
-        .from('profiles')
+        .from('users')
         .update({
           language: preferences.language,
           updated_at: new Date().toISOString(),
@@ -311,7 +462,7 @@ export class ProfileService {
   static async deleteProfile(userId: string): Promise<ProfileResult> {
     try {
       const { error } = await supabase
-        .from('profiles')
+        .from('users')
         .delete()
         .eq('id', userId)
 

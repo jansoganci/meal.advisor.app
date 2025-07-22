@@ -1,6 +1,6 @@
-import type { AIRequest, AIResponse, AIError } from '../types'
+import { AIServiceError } from '../../errors'
 import { AI_CONFIG, COST_RATES } from '../config'
-import { AIServiceError, NetworkError } from '../../errors'
+import type { AIError, AIRequest, AIResponse } from '../types'
 
 export class GeminiProvider {
   private apiKey: string
@@ -8,9 +8,9 @@ export class GeminiProvider {
   private model: string
 
   constructor() {
-    this.apiKey = AI_CONFIG.providers.gemini.apiKey
-    this.baseUrl = AI_CONFIG.providers.gemini.baseUrl
-    this.model = AI_CONFIG.providers.gemini.model
+    this.apiKey = AI_CONFIG.providers.gemini.apiKey!
+    this.baseUrl = AI_CONFIG.providers.gemini.baseUrl!
+    this.model = AI_CONFIG.providers.gemini.model!
 
     if (!this.apiKey) {
       throw new AIServiceError('Gemini API key is not configured')
@@ -34,7 +34,7 @@ export class GeminiProvider {
           totalTokens: response.usageMetadata?.totalTokenCount || 0
         },
         cost: this.calculateCost(response.usageMetadata),
-        requestId: request.requestId,
+        requestId: request.requestId || '',
         timestamp: new Date().toISOString()
       }
     } catch (error) {

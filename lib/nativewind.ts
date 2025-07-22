@@ -1,22 +1,21 @@
-import { styled } from 'nativewind';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  TextInput, 
-  ScrollView, 
+import {
+  Image,
   SafeAreaView,
-  Image
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 // Styled components with NativeWind
-export const StyledView = styled(View);
-export const StyledText = styled(Text);
-export const StyledTouchableOpacity = styled(TouchableOpacity);
-export const StyledTextInput = styled(TextInput);
-export const StyledScrollView = styled(ScrollView);
-export const StyledSafeAreaView = styled(SafeAreaView);
-export const StyledImage = styled(Image);
+export const StyledView = View;
+export const StyledText = Text;
+export const StyledTouchableOpacity = TouchableOpacity;
+export const StyledTextInput = TextInput;
+export const StyledScrollView = ScrollView;
+export const StyledSafeAreaView = SafeAreaView;
+export const StyledImage = Image;
 
 // Utility functions for consistent styling
 export const getCardClasses = (variant: 'default' | 'elevated' | 'outlined' = 'default') => {

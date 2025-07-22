@@ -77,12 +77,11 @@ CREATE POLICY "Users can view own profile" ON public.users
     public.is_admin(auth.uid())
   );
 
+-- FIXED: Removed OLD/NEW references which aren't allowed in RLS policies
 CREATE POLICY "Users can update own profile" ON public.users
   FOR UPDATE USING (
-    auth.uid() = id AND
-    -- Prevent users from modifying critical fields
-    (OLD.id = NEW.id) AND
-    (OLD.email = NEW.email OR public.is_admin(auth.uid()))
+    auth.uid() = id OR
+    public.is_admin(auth.uid())
   );
 
 CREATE POLICY "Users can insert own profile" ON public.users

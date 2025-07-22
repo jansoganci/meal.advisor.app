@@ -1,12 +1,11 @@
+import { StyledScrollView, StyledTouchableOpacity, StyledView } from '@/lib/nativewind'
 import React from 'react'
-import { View, TouchableOpacity, ScrollView } from 'react-native'
-import { styled } from 'nativewind'
-import { Card, Typography, Badge, Button } from '../ui'
+import { Badge, Button, Card, Typography } from '../ui'
 
 // Styled components
-const StyledView = styled(View)
-const StyledTouchableOpacity = styled(TouchableOpacity)
-const StyledScrollView = styled(ScrollView)
+// const StyledView = styled(View)
+// const StyledTouchableOpacity = styled(TouchableOpacity)
+// const StyledScrollView = styled(ScrollView)
 
 export interface Card3Props {
   title: string
@@ -44,17 +43,7 @@ const Card3: React.FC<Card3Props> = ({
   className = ''
 }) => {
   const CardContainer = onPress ? StyledTouchableOpacity : StyledView
-  const displayItems = items.slice(0, maxItems)
-
-  const getStatusColor = (status?: string) => {
-    switch (status) {
-      case 'active': return 'success'
-      case 'inactive': return 'default'
-      case 'pending': return 'warning'
-      case 'completed': return 'success'
-      default: return 'default'
-    }
-  }
+  const displayItems = maxItems ? items.slice(0, maxItems) : items
 
   return (
     <CardContainer
@@ -83,7 +72,7 @@ const Card3: React.FC<Card3Props> = ({
             className="mb-4"
           >
             <StyledView className="flex-row space-x-3">
-              {displayItems.map((item, index) => (
+              {displayItems.map((item) => (
                 <StyledTouchableOpacity
                   key={item.id}
                   className="w-32 p-3 bg-gray-50 rounded-lg"
@@ -99,8 +88,8 @@ const Card3: React.FC<Card3Props> = ({
                     </Typography>
                   )}
                   {item.badge && (
-                    <StyledView className="mt-1">
-                      <Badge variant={item.badge.variant} size="sm" rounded>
+                    <StyledView className="ml-2">
+                      <Badge variant={item.badge.variant || 'default'} size="sm" rounded>
                         {item.badge.text}
                       </Badge>
                     </StyledView>
@@ -111,7 +100,7 @@ const Card3: React.FC<Card3Props> = ({
           </StyledScrollView>
         ) : (
           <StyledView className="space-y-3 mb-4">
-            {displayItems.map((item, index) => (
+            {displayItems.map((item) => (
               <StyledTouchableOpacity
                 key={item.id}
                 className="flex-row items-center justify-between p-3 bg-gray-50 rounded-lg"
@@ -131,7 +120,7 @@ const Card3: React.FC<Card3Props> = ({
                 
                 <StyledView className="flex-row items-center space-x-2">
                   {item.badge && (
-                    <Badge variant={item.badge.variant} size="sm" rounded>
+                    <Badge variant={item.badge.variant || 'default'} size="sm" rounded>
                       {item.badge.text}
                     </Badge>
                   )}
