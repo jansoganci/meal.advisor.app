@@ -73,6 +73,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             id: session.user.id,
             email: session.user.email!
           })
+          
+          // Check if user has a profile
+          const { data: profile, error: profileError } = await supabase
+            .from('users')
+            .select('id, onboarding_completed')
+            .eq('id', session.user.id)
+            .single()
+          
+          if (profileError || !profile) {
+            // User doesn't have a profile, will be handled by index.tsx
+            console.log('User authenticated but no profile found')
+          } else if (!profile.onboarding_completed) {
+            // User has profile but onboarding not completed, will be handled by index.tsx
+            console.log('User authenticated but onboarding not completed')
+          } else {
+            // User has completed profile
+            console.log('User authenticated with completed profile')
+          }
         }
       } catch (err) {
         console.error('Auth initialization error:', err)
@@ -97,6 +115,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             id: userId,
             email: email
           })
+          
+          // Check if user has a profile after creation attempt
+          const { data: profile, error: profileError } = await supabase
+            .from('users')
+            .select('id, onboarding_completed')
+            .eq('id', userId)
+            .single()
+          
+          if (profileError || !profile || !profile.onboarding_completed) {
+            // User doesn't have a profile or onboarding not completed
+            console.log('User signed in but needs onboarding')
+          } else {
+            console.log('User signed in with completed profile')
+          }
         } else if (event === 'SIGNED_OUT') {
           setUser(null)
         }
@@ -126,8 +158,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           id: data.user.id,
           email: data.user.email!
         })
-        // Navigate directly to main app for existing users
-        router.replace('/(tabs)')
+        
+        // Check if user has a profile before navigating
+        const { data: profile, error: profileError } = await supabase
+          .from('users')
+          .select('id, onboarding_completed')
+          .eq('id', data.user.id)
+          .single()
+        
+        if (profileError || !profile) {
+          // User doesn't have a profile, redirect to onboarding
+          router.replace('/(onboarding)/step1')
+        } else if (!profile.onboarding_completed) {
+          // User has profile but onboarding not completed
+          router.replace('/(onboarding)/step1')
+        } else {
+          // User has completed profile, navigate to main app
+          router.replace('/(tabs)')
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Sign in failed')

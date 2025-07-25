@@ -68,4 +68,9 @@ declare module 'expo-constants' {
   }
 }
 
-export {}
+declare module 'structured-clone' {
+  function structuredClone<T>(value: T): T;
+  export default structuredClone;
+}
+
+export { }

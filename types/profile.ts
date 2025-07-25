@@ -1,30 +1,36 @@
 export interface UserProfile {
   id: string
   
-  // Step 1: Basic Information
+  // Basic Information
   age: number
-  gender: 'male' | 'female' | 'other'
+  gender: 'male' | 'female' | 'other' | 'prefer_not_to_say'
   
-  // Step 2: Physical Measurements
-  height: number // cm
-  weight: number // kg
+  // Physical Measurements
+  height_cm: number
+  weight_kg: number
   
-  // Step 3: Health Information
+  // Health Information
   allergies: string[]
   chronic_illnesses: string[]
   
-  // Step 4: Goals & Activity
-  activity_level: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active'
-  fitness_goal: 'lose_weight' | 'gain_weight' | 'maintain' | 'build_muscle'
+  // Goals & Activity
+  activity_level: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'extremely_active'
+  primary_goal: 'lose_weight' | 'maintain_weight' | 'gain_weight' | 'build_muscle' | 'improve_health'
+  
+  // Preferences
+  dietary_preferences: string[]
+  cuisine_preferences: string[]
   
   // App Settings
-  language: string
-  is_premium: boolean
+  preferred_language: string
+  notifications_enabled: boolean
+  onboarding_completed: boolean
   
   // Calculated Fields
-  bmi?: number
-  daily_calorie_goal?: number
-  daily_protein_goal?: number
+  daily_calories?: number
+  daily_protein_g?: number
+  daily_carbs_g?: number
+  daily_fat_g?: number
   
   // Timestamps
   created_at: string
@@ -33,12 +39,12 @@ export interface UserProfile {
 
 export interface OnboardingStep1 {
   age: number
-  gender: 'male' | 'female' | 'other'
+  gender: 'male' | 'female' | 'other' | 'prefer_not_to_say'
 }
 
 export interface OnboardingStep2 {
-  height: number
-  weight: number
+  height_cm: number
+  weight_kg: number
 }
 
 export interface OnboardingStep3 {
@@ -47,12 +53,14 @@ export interface OnboardingStep3 {
 }
 
 export interface OnboardingStep4 {
-  activity_level: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active'
-  fitness_goal: 'lose_weight' | 'gain_weight' | 'maintain' | 'build_muscle'
+  activity_level: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'extremely_active'
+  primary_goal: 'lose_weight' | 'maintain_weight' | 'gain_weight' | 'build_muscle' | 'improve_health'
 }
 
 export interface OnboardingData extends OnboardingStep1, OnboardingStep2, OnboardingStep3, OnboardingStep4 {
-  language?: string
+  preferred_language?: string
+  dietary_preferences?: string[]
+  cuisine_preferences?: string[]
 }
 
 export interface ProfileContextType {

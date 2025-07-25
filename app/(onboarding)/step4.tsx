@@ -17,7 +17,7 @@ export default function OnboardingStep4() {
   
   const [formData, setFormData] = useState<OnboardingStep4Data>({
     activity_level: step4Data?.activity_level || ('') as any,
-    fitness_goal: step4Data?.fitness_goal || ('') as any,
+    primary_goal: step4Data?.primary_goal || ('') as any,
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -59,7 +59,7 @@ export default function OnboardingStep4() {
   }
 
   const handleGoalChange = (goal: string) => {
-    setFormData(prev => ({ ...prev, fitness_goal: goal as any }))
+    setFormData(prev => ({ ...prev, primary_goal: goal as any }))
   }
 
   const handleComplete = async () => {
@@ -72,7 +72,7 @@ export default function OnboardingStep4() {
       return
     }
 
-    if (!step1Data || !step2Data || !step3Data || !formData.activity_level || !formData.fitness_goal) {
+    if (!step1Data || !step2Data || !step3Data || !formData.activity_level || !formData.primary_goal) {
       Alert.alert('Error', 'Please complete all steps before proceeding')
       return
     }
@@ -125,7 +125,7 @@ export default function OnboardingStep4() {
     router.replace('/(tabs)')
   }
 
-  const isFormValid = formData.activity_level && formData.fitness_goal
+  const isFormValid = formData.activity_level && formData.primary_goal
 
   return (
     <OnboardingContainer
@@ -141,7 +141,7 @@ export default function OnboardingStep4() {
         />
 
         <GoalSelection
-          value={formData.fitness_goal}
+          value={formData.primary_goal}
           onValueChange={handleGoalChange}
         />
       </ScrollView>

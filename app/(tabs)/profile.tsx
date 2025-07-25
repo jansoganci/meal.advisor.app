@@ -1,52 +1,10 @@
-import { ProfileCard } from '@/components/profile/ProfileCard'
-import { SettingsCard } from '@/components/profile/SettingsCard'
-import { StatsCard } from '@/components/profile/StatsCard'
+import { AppSettingsCard, PersonalInfoCard, ProfileCard, StatsCard } from '@/components/profile'
 import { Colors } from '@/constants/Colors'
-import { useAuth } from '@/contexts/AuthContext'
-import { useProfile } from '@/contexts/ProfileContext'
-import { router } from 'expo-router'
-import React, { useState } from 'react'
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native'
+import React from 'react'
+import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function ProfileScreen() {
-  const { user, signOut } = useAuth()
-  const { profile, loading } = useProfile()
-  const [isSigningOut, setIsSigningOut] = useState(false)
-
-  const handleEditProfile = () => {
-    router.push('/profile/edit')
-  }
-
-  const handleSignOut = async () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: async () => {
-            setIsSigningOut(true)
-            await signOut()
-            setIsSigningOut(false)
-          },
-        },
-      ]
-    )
-  }
-
-  if (loading) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: Colors.light.background }]}>
-        <View style={styles.loadingContainer}>
-          <Text style={[styles.loadingText, { color: Colors.light.text }]}>Loading profile...</Text>
-        </View>
-      </SafeAreaView>
-    )
-  }
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: Colors.light.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
@@ -55,21 +13,10 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.content}>
-          <ProfileCard
-            profile={profile}
-            user={user}
-            onEditPress={handleEditProfile}
-          />
-
-          {profile && (
-            <StatsCard profile={profile} />
-          )}
-
-          <SettingsCard
-            profile={profile}
-            onSignOut={handleSignOut}
-            isSigningOut={isSigningOut}
-          />
+          <ProfileCard />
+          <StatsCard />
+          <PersonalInfoCard />
+          <AppSettingsCard />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -96,14 +43,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 24,
     gap: 20,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    opacity: 0.7,
   },
 })

@@ -26,12 +26,12 @@ export default function EditProfileScreen() {
       setFormData({
         age: profile.age,
         gender: profile.gender,
-        height: profile.height,
-        weight: profile.weight,
+        height_cm: profile.height_cm,
+        weight_kg: profile.weight_kg,
         allergies: profile.allergies || [],
         chronic_illnesses: profile.chronic_illnesses || [],
         activity_level: profile.activity_level,
-        fitness_goal: profile.fitness_goal,
+        primary_goal: profile.primary_goal,
       })
     }
   }, [profile])
@@ -129,12 +129,12 @@ export default function EditProfileScreen() {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Physical Measurements</Text>
           <HeightPicker 
-            value={formData.height || 0} 
-            onValueChange={(height) => setFormData(prev => ({ ...prev, height }))} 
+            value={formData.height_cm || 0} 
+            onValueChange={(height_cm) => setFormData(prev => ({ ...prev, height_cm }))} 
           />
           <WeightPicker 
-            value={formData.weight || 0} 
-            onValueChange={(weight) => setFormData(prev => ({ ...prev, weight }))} 
+            value={formData.weight_kg || 0} 
+            onValueChange={(weight_kg) => setFormData(prev => ({ ...prev, weight_kg }))} 
           />
         </View>
 
@@ -163,8 +163,8 @@ export default function EditProfileScreen() {
             onValueChange={(level) => setFormData(prev => ({ ...prev, activity_level: level as any }))}
           />
           <GoalSelection
-            value={formData.fitness_goal || ''}
-            onValueChange={(goal) => setFormData(prev => ({ ...prev, fitness_goal: goal as any }))}
+            value={formData.primary_goal || ''}
+            onValueChange={(goal) => setFormData(prev => ({ ...prev, primary_goal: goal as any }))}
           />
         </View>
 

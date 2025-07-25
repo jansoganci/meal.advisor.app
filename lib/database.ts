@@ -421,6 +421,90 @@ export const database = {
     }
   },
 
+  // Quota management
+  quota: {
+    async checkQuota(userId: string): Promise<{
+      quotaAvailable: boolean
+      dailyCalls: number
+      quotaLimit: number
+      isPremium: boolean
+      remainingCalls: number
+      error?: string
+    }> {
+      const { data, error } = await supabase.rpc('check_quota', {
+        p_user_id: userId
+      })
+      
+      if (error) {
+        console.error('Error checking quota:', error)
+        return {
+          quotaAvailable: false,
+          dailyCalls: 0,
+          quotaLimit: 3,
+          isPremium: false,
+          remainingCalls: 0,
+          error: 'Failed to check quota'
+        }
+      }
+      
+      return {
+        quotaAvailable: data?.quota_available || false,
+        dailyCalls: data?.daily_calls || 0,
+        quotaLimit: data?.quota_limit || 3,
+        isPremium: data?.is_premium || false,
+        remainingCalls: data?.remaining_calls || 0,
+        error: data?.error
+      }
+    },
+
+    async incrementQuota(userId: string): Promise<{
+      success: boolean
+      dailyCalls: number
+      error?: string
+    }> {
+      const { data, error } = await supabase.rpc('increment_quota', {
+        p_user_id: userId
+      })
+      
+      if (error) {
+        console.error('Error incrementing quota:', error)
+        return {
+          success: false,
+          dailyCalls: 0,
+          error: 'Failed to increment quota'
+        }
+      }
+      
+      return {
+        success: data?.success || false,
+        dailyCalls: data?.daily_calls || 0,
+        error: data?.error
+      }
+    },
+
+    async resetQuota(userId: string): Promise<{
+      success: boolean
+      error?: string
+    }> {
+      const { data, error } = await supabase.rpc('reset_quota', {
+        p_user_id: userId
+      })
+      
+      if (error) {
+        console.error('Error resetting quota:', error)
+        return {
+          success: false,
+          error: 'Failed to reset quota'
+        }
+      }
+      
+      return {
+        success: data?.success || false,
+        error: data?.error
+      }
+    }
+  },
+
   // Utility functions
   utils: {
     async checkRateLimit(

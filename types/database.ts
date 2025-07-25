@@ -26,6 +26,9 @@ export interface Database {
           timezone: string | null
           notifications_enabled: boolean | null
           onboarding_completed: boolean | null
+          daily_ai_calls: number | null
+          last_ai_call_date: string | null
+          is_premium: boolean | null
           created_at: string
           updated_at: string
         }
@@ -53,6 +56,9 @@ export interface Database {
           timezone?: string | null
           notifications_enabled?: boolean | null
           onboarding_completed?: boolean | null
+          daily_ai_calls?: number | null
+          last_ai_call_date?: string | null
+          is_premium?: boolean | null
           created_at?: string
           updated_at?: string
         }
@@ -80,6 +86,9 @@ export interface Database {
           timezone?: string | null
           notifications_enabled?: boolean | null
           onboarding_completed?: boolean | null
+          daily_ai_calls?: number | null
+          last_ai_call_date?: string | null
+          is_premium?: boolean | null
           created_at?: string
           updated_at?: string
         }

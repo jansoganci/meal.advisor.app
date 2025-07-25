@@ -5,20 +5,21 @@ import React, { useState } from 'react'
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 interface GenderPickerProps {
-  value: 'male' | 'female' | 'other' | ''
-  onValueChange: (gender: 'male' | 'female' | 'other') => void
+  value: 'male' | 'female' | 'other' | 'prefer_not_to_say' | ''
+  onValueChange: (gender: 'male' | 'female' | 'other' | 'prefer_not_to_say') => void
 }
 
 export const GenderPicker: React.FC<GenderPickerProps> = ({ value, onValueChange }) => {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
   const [modalVisible, setModalVisible] = useState(false)
-  const [tempValue, setTempValue] = useState<'male' | 'female' | 'other'>(value || 'male')
+  const [tempValue, setTempValue] = useState<'male' | 'female' | 'other' | 'prefer_not_to_say'>(value || 'male')
 
   const genderOptions = [
     { value: 'male', label: 'Male' },
     { value: 'female', label: 'Female' },
     { value: 'other', label: 'Other' },
+    { value: 'prefer_not_to_say', label: 'Prefer not to say' },
   ]
 
   const handleConfirm = () => {
@@ -70,7 +71,7 @@ export const GenderPicker: React.FC<GenderPickerProps> = ({ value, onValueChange
             <View style={styles.pickerWrapper}>
               <Picker
                 selectedValue={tempValue}
-                onValueChange={(value) => setTempValue(value as 'male' | 'female' | 'other')}
+                onValueChange={(value) => setTempValue(value as 'male' | 'female' | 'other' | 'prefer_not_to_say')}
                 style={[styles.modalPicker, { color: colors.text }]}
                 itemStyle={{ color: colors.text }}
               >

@@ -1,0 +1,5 @@
+# TODO: AI provider implementations will be added here
+# This directory will contain:
+# - deepseek.ts - DeepSeek API integration
+# - gemini.ts - Gemini API integration
+# - index.ts - Provider factory and management 

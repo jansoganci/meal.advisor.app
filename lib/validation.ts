@@ -1,387 +1,264 @@
-import { UserProfile, OnboardingData } from '@/types/profile'
+// QuickMeal Input Validation and Sanitization
 
-export interface ValidationResult {
-  isValid: boolean
-  errors: string[]
-  warnings: string[]
+export interface ValidationError {
+  field: string;
+  message: string;
 }
 
-export class ValidationService {
-  // Email validation
-  static isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
-
-  // Age validation
-  static validateAge(age: number): ValidationResult {
-    const errors: string[] = []
-    const warnings: string[] = []
-
-    if (!age || age < 16) {
-      errors.push('Age must be at least 16 years old')
-    }
-    if (age > 120) {
-      errors.push('Age must be less than 120 years old')
-    }
-    if (age < 18) {
-      warnings.push('Users under 18 should consult a healthcare professional')
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      warnings,
-    }
-  }
-
-  // Gender validation
-  static validateGender(gender: string): ValidationResult {
-    const validGenders = ['male', 'female', 'other']
-    const errors: string[] = []
-
-    if (!gender || !validGenders.includes(gender)) {
-      errors.push('Please select a valid gender')
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      warnings: [],
-    }
-  }
-
-  // Height validation (in cm)
-  static validateHeight(height: number): ValidationResult {
-    const errors: string[] = []
-    const warnings: string[] = []
-
-    if (!height || height < 100) {
-      errors.push('Height must be at least 100 cm')
-    }
-    if (height > 250) {
-      errors.push('Height must be less than 250 cm')
-    }
-    if (height < 140) {
-      warnings.push('Height seems unusually low for an adult')
-    }
-    if (height > 210) {
-      warnings.push('Height seems unusually high')
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      warnings,
-    }
-  }
-
-  // Weight validation (in kg)
-  static validateWeight(weight: number): ValidationResult {
-    const errors: string[] = []
-    const warnings: string[] = []
-
-    if (!weight || weight < 30) {
-      errors.push('Weight must be at least 30 kg')
-    }
-    if (weight > 300) {
-      errors.push('Weight must be less than 300 kg')
-    }
-    if (weight < 40) {
-      warnings.push('Weight seems unusually low')
-    }
-    if (weight > 150) {
-      warnings.push('Weight seems unusually high')
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      warnings,
-    }
-  }
-
-  // Activity level validation
-  static validateActivityLevel(level: string): ValidationResult {
-    const validLevels = ['sedentary', 'lightly_active', 'moderately_active', 'very_active']
-    const errors: string[] = []
-
-    if (!level || !validLevels.includes(level)) {
-      errors.push('Please select a valid activity level')
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      warnings: [],
-    }
-  }
-
-  // Fitness goal validation
-  static validateFitnessGoal(goal: string): ValidationResult {
-    const validGoals = ['lose_weight', 'gain_weight', 'maintain', 'build_muscle']
-    const errors: string[] = []
-
-    if (!goal || !validGoals.includes(goal)) {
-      errors.push('Please select a valid fitness goal')
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      warnings: [],
-    }
-  }
-
-  // Allergies validation
-  static validateAllergies(allergies: string[]): ValidationResult {
-    const validAllergies = ['peanuts', 'dairy', 'eggs', 'gluten', 'shellfish', 'fish', 'tree_nuts', 'other']
-    const errors: string[] = []
-    const warnings: string[] = []
-
-    if (allergies && allergies.length > 0) {
-      const invalidAllergies = allergies.filter(allergy => !validAllergies.includes(allergy))
-      if (invalidAllergies.length > 0) {
-        errors.push(`Invalid allergies: ${invalidAllergies.join(', ')}`)
-      }
-
-      if (allergies.length > 5) {
-        warnings.push('Having many allergies may limit meal options significantly')
-      }
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      warnings,
-    }
-  }
-
-  // Chronic illnesses validation
-  static validateChronicIllnesses(illnesses: string[]): ValidationResult {
-    const validIllnesses = ['diabetes', 'heart_disease', 'high_blood_pressure', 'none']
-    const errors: string[] = []
-    const warnings: string[] = []
-
-    if (illnesses && illnesses.length > 0) {
-      const invalidIllnesses = illnesses.filter(illness => !validIllnesses.includes(illness))
-      if (invalidIllnesses.length > 0) {
-        errors.push(`Invalid chronic illnesses: ${invalidIllnesses.join(', ')}`)
-      }
-
-      // Check for conflicting selections
-      if (illnesses.includes('none') && illnesses.length > 1) {
-        errors.push('Cannot select "none" with other chronic illnesses')
-      }
-
-      if (illnesses.length > 1 && !illnesses.includes('none')) {
-        warnings.push('Multiple chronic illnesses may require special dietary considerations')
-      }
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      warnings,
-    }
-  }
-
-  // Language validation
-  static validateLanguage(language: string): ValidationResult {
-    const supportedLanguages = ['en', 'ja', 'ko', 'zh', 'th', 'ms', 'vi', 'id', 'es', 'de', 'nl', 'lt', 'et', 'ar']
-    const errors: string[] = []
-
-    if (!language || !supportedLanguages.includes(language)) {
-      errors.push('Please select a supported language')
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      warnings: [],
-    }
-  }
-
-  // Comprehensive onboarding data validation
-  static validateOnboardingData(data: OnboardingData): ValidationResult {
-    const allErrors: string[] = []
-    const allWarnings: string[] = []
-
-    // Validate each field
-    const ageValidation = this.validateAge(data.age)
-    const genderValidation = this.validateGender(data.gender)
-    const heightValidation = this.validateHeight(data.height)
-    const weightValidation = this.validateWeight(data.weight)
-    const activityValidation = this.validateActivityLevel(data.activity_level)
-    const goalValidation = this.validateFitnessGoal(data.fitness_goal)
-    const allergiesValidation = this.validateAllergies(data.allergies || [])
-    const illnessesValidation = this.validateChronicIllnesses(data.chronic_illnesses || [])
-
-    // Collect all errors and warnings
-    allErrors.push(
-      ...ageValidation.errors,
-      ...genderValidation.errors,
-      ...heightValidation.errors,
-      ...weightValidation.errors,
-      ...activityValidation.errors,
-      ...goalValidation.errors,
-      ...allergiesValidation.errors,
-      ...illnessesValidation.errors
-    )
-
-    allWarnings.push(
-      ...ageValidation.warnings,
-      ...genderValidation.warnings,
-      ...heightValidation.warnings,
-      ...weightValidation.warnings,
-      ...activityValidation.warnings,
-      ...goalValidation.warnings,
-      ...allergiesValidation.warnings,
-      ...illnessesValidation.warnings
-    )
-
-    // Additional cross-field validations
-    if (data.height && data.weight) {
-      const bmi = data.weight / ((data.height / 100) * (data.height / 100))
-      if (bmi < 15) {
-        allWarnings.push('BMI is very low - consider consulting a healthcare professional')
-      }
-      if (bmi > 35) {
-        allWarnings.push('BMI is very high - consider consulting a healthcare professional')
-      }
-    }
-
-    return {
-      isValid: allErrors.length === 0,
-      errors: allErrors,
-      warnings: allWarnings,
-    }
-  }
-
-  // Profile update validation
-  static validateProfileUpdate(updates: Partial<UserProfile>): ValidationResult {
-    const allErrors: string[] = []
-    const allWarnings: string[] = []
-
-    // Validate only the fields that are being updated
-    if (updates.age !== undefined) {
-      const validation = this.validateAge(updates.age)
-      allErrors.push(...validation.errors)
-      allWarnings.push(...validation.warnings)
-    }
-
-    if (updates.gender !== undefined) {
-      const validation = this.validateGender(updates.gender)
-      allErrors.push(...validation.errors)
-      allWarnings.push(...validation.warnings)
-    }
-
-    if (updates.height !== undefined) {
-      const validation = this.validateHeight(updates.height)
-      allErrors.push(...validation.errors)
-      allWarnings.push(...validation.warnings)
-    }
-
-    if (updates.weight !== undefined) {
-      const validation = this.validateWeight(updates.weight)
-      allErrors.push(...validation.errors)
-      allWarnings.push(...validation.warnings)
-    }
-
-    if (updates.activity_level !== undefined) {
-      const validation = this.validateActivityLevel(updates.activity_level)
-      allErrors.push(...validation.errors)
-      allWarnings.push(...validation.warnings)
-    }
-
-    if (updates.fitness_goal !== undefined) {
-      const validation = this.validateFitnessGoal(updates.fitness_goal)
-      allErrors.push(...validation.errors)
-      allWarnings.push(...validation.warnings)
-    }
-
-    if (updates.allergies !== undefined) {
-      const validation = this.validateAllergies(updates.allergies)
-      allErrors.push(...validation.errors)
-      allWarnings.push(...validation.warnings)
-    }
-
-    if (updates.chronic_illnesses !== undefined) {
-      const validation = this.validateChronicIllnesses(updates.chronic_illnesses)
-      allErrors.push(...validation.errors)
-      allWarnings.push(...validation.warnings)
-    }
-
-    if (updates.language !== undefined) {
-      const validation = this.validateLanguage(updates.language)
-      allErrors.push(...validation.errors)
-      allWarnings.push(...validation.warnings)
-    }
-
-    return {
-      isValid: allErrors.length === 0,
-      errors: allErrors,
-      warnings: allWarnings,
-    }
-  }
+export interface QuickMealValidationResult {
+  isValid: boolean;
+  errors: ValidationError[];
+  sanitizedData?: any;
 }
 
-// Data sanitization utilities
-export class SanitizationService {
-  // Sanitize string input
-  static sanitizeString(input: string): string {
-    if (!input) return ''
-    return input.trim().replace(/[<>]/g, '')
-  }
+// Valid values for each preference field
+export const VALID_SERVINGS = [1, 2, 4];
+export const VALID_PREP_TIMES = ['<30', '30-45', '45-60', '60+'];
+export const VALID_DIETS = ['None', 'Vegetarian', 'Vegan', 'Keto', 'Paleo', 'Mediterranean', 'Low-Carb', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 'Low-Fat', 'Low-Sodium'];
+export const VALID_CUISINES = ['Any', 'Italian', 'Mexican', 'Asian', 'Mediterranean', 'American', 'Indian', 'French', 'Thai', 'Greek', 'Chinese', 'Japanese', 'Korean'];
+export const VALID_MOODS = ['Quick', 'Comfort', 'Healthy', 'Indulgent', 'Light', 'Spicy', 'Sweet', 'Savory'];
+export const VALID_BUDGETS = ['$', '$$', '$$$', 'Any'];
 
-  // Sanitize email
-  static sanitizeEmail(email: string): string {
-    if (!email) return ''
-    return email.toLowerCase().trim()
-  }
+// Sanitization functions
+export const sanitizeString = (value: string): string => {
+  if (typeof value !== 'string') return '';
+  return value.trim().replace(/\s+/g, ' '); // Remove excess whitespace
+};
 
-  // Sanitize array of strings
-  static sanitizeStringArray(array: string[]): string[] {
-    if (!array || !Array.isArray(array)) return []
-    return array.map(item => this.sanitizeString(item)).filter(item => item.length > 0)
-  }
+export const sanitizeNumber = (value: any): number | null => {
+  const num = Number(value);
+  return isNaN(num) ? null : num;
+};
 
-  // Sanitize numeric input
-  static sanitizeNumber(input: number | string): number {
-    if (typeof input === 'number') return input
-    const parsed = parseFloat(input)
-    return isNaN(parsed) ? 0 : parsed
-  }
+export const sanitizeArray = (value: any): string[] => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter(item => typeof item === 'string')
+    .map(item => sanitizeString(item))
+    .filter(item => item.length > 0);
+};
 
-  // Sanitize onboarding data
-  static sanitizeOnboardingData(data: OnboardingData): OnboardingData {
+// Validation functions
+export const validateServings = (value: any): ValidationError | null => {
+  const num = sanitizeNumber(value);
+  if (num === null) {
+    return { field: 'servings', message: 'Please select a valid number of servings.' };
+  }
+  if (!VALID_SERVINGS.includes(num)) {
+    return { field: 'servings', message: 'Please select 1, 2, or 4 servings.' };
+  }
+  return null;
+};
+
+export const validatePrepTime = (value: any): ValidationError | null => {
+  const sanitized = sanitizeString(value);
+  if (!sanitized) {
+    return { field: 'prepTime', message: 'Please select a preparation time.' };
+  }
+  if (!VALID_PREP_TIMES.includes(sanitized)) {
+    return { field: 'prepTime', message: 'Please select a valid preparation time.' };
+  }
+  return null;
+};
+
+export const validateDiet = (value: any): ValidationError | null => {
+  const sanitized = sanitizeString(value);
+  if (!sanitized) {
+    return { field: 'diet', message: 'Please select a dietary preference.' };
+  }
+  if (!VALID_DIETS.includes(sanitized)) {
+    return { field: 'diet', message: 'Please select a valid dietary preference.' };
+  }
+  return null;
+};
+
+export const validateCuisine = (value: any): ValidationError | null => {
+  const sanitized = sanitizeString(value);
+  if (!sanitized) {
+    return { field: 'cuisine', message: 'Please select a cuisine preference.' };
+  }
+  if (!VALID_CUISINES.includes(sanitized)) {
+    return { field: 'cuisine', message: 'Please select a valid cuisine preference.' };
+  }
+  return null;
+};
+
+export const validateMood = (value: any): ValidationError | null => {
+  const sanitized = sanitizeString(value);
+  if (!sanitized) {
+    return { field: 'mood', message: 'Please select a mood preference.' };
+  }
+  if (!VALID_MOODS.includes(sanitized)) {
+    return { field: 'mood', message: 'Please select a valid mood preference.' };
+  }
+  return null;
+};
+
+export const validateBudget = (value: any): ValidationError | null => {
+  const sanitized = sanitizeString(value);
+  if (!sanitized) {
+    return { field: 'budget', message: 'Please select a budget preference.' };
+  }
+  if (!VALID_BUDGETS.includes(sanitized)) {
+    return { field: 'budget', message: 'Please select a valid budget preference.' };
+  }
+  return null;
+};
+
+// Main validation function for QuickMeal preferences
+export const validateQuickMealPreferences = (preferences: any): QuickMealValidationResult => {
+  const errors: ValidationError[] = [];
+  
+  // Validate each field
+  const servingsError = validateServings(preferences.servings);
+  if (servingsError) errors.push(servingsError);
+  
+  const prepTimeError = validatePrepTime(preferences.prepTime);
+  if (prepTimeError) errors.push(prepTimeError);
+  
+  const dietError = validateDiet(preferences.diet);
+  if (dietError) errors.push(dietError);
+  
+  const cuisineError = validateCuisine(preferences.cuisine);
+  if (cuisineError) errors.push(cuisineError);
+  
+  const moodError = validateMood(preferences.mood);
+  if (moodError) errors.push(moodError);
+  
+  const budgetError = validateBudget(preferences.budget);
+  if (budgetError) errors.push(budgetError);
+  
+  // If validation passes, return sanitized data
+  if (errors.length === 0) {
+    const sanitizedData = {
+      servings: sanitizeNumber(preferences.servings),
+      prepTime: sanitizeString(preferences.prepTime),
+      diet: sanitizeString(preferences.diet),
+      cuisine: sanitizeString(preferences.cuisine),
+      mood: sanitizeString(preferences.mood),
+      budget: sanitizeString(preferences.budget)
+    };
+    
     return {
-      age: this.sanitizeNumber(data.age),
-      gender: this.sanitizeString(data.gender) as any,
-      height: this.sanitizeNumber(data.height),
-      weight: this.sanitizeNumber(data.weight),
-      allergies: this.sanitizeStringArray(data.allergies || []),
-      chronic_illnesses: this.sanitizeStringArray(data.chronic_illnesses || []),
-      activity_level: this.sanitizeString(data.activity_level) as any,
-      fitness_goal: this.sanitizeString(data.fitness_goal) as any,
-      language: this.sanitizeString(data.language || 'en'),
+      isValid: true,
+      errors: [],
+      sanitizedData
+    };
+  }
+  
+  return {
+    isValid: false,
+    errors
+  };
+};
+
+// Validate AI response data
+export const validateQuickMealResponse = (response: any): QuickMealValidationResult => {
+  const errors: ValidationError[] = [];
+  
+  // Check if response has required structure
+  if (!response || typeof response !== 'object') {
+    errors.push({ field: 'response', message: 'Invalid response format received.' });
+    return { isValid: false, errors };
+  }
+  
+  // Check if suggestions array exists and is valid
+  if (!Array.isArray(response.suggestions)) {
+    errors.push({ field: 'suggestions', message: 'No meal suggestions received.' });
+    return { isValid: false, errors };
+  }
+  
+  if (response.suggestions.length === 0) {
+    errors.push({ field: 'suggestions', message: 'No meal suggestions available.' });
+    return { isValid: false, errors };
+  }
+  
+  // Validate each suggestion
+  for (let i = 0; i < response.suggestions.length; i++) {
+    const suggestion = response.suggestions[i];
+    const suggestionErrors = validateQuickMealSuggestion(suggestion, i);
+    errors.push(...suggestionErrors);
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
+// Validate individual meal suggestion
+export const validateQuickMealSuggestion = (suggestion: any, index: number): ValidationError[] => {
+  const errors: ValidationError[] = [];
+  
+  // Required fields for each suggestion
+  const requiredFields = ['title', 'description', 'totalTime', 'calories', 'estimatedCost', 'difficulty', 'nutrition', 'ingredients', 'quickInstructions'];
+  
+  for (const field of requiredFields) {
+    if (!suggestion[field]) {
+      errors.push({ 
+        field: `suggestion_${index}_${field}`, 
+        message: `Meal ${index + 1} is missing required information: ${field}.` 
+      });
     }
   }
-
-  // Sanitize profile update data
-  static sanitizeProfileUpdate(updates: Partial<UserProfile>): Partial<UserProfile> {
-    const sanitized: Partial<UserProfile> = {}
-
-    if (updates.age !== undefined) sanitized.age = this.sanitizeNumber(updates.age)
-    if (updates.gender !== undefined) sanitized.gender = this.sanitizeString(updates.gender) as any
-    if (updates.height !== undefined) sanitized.height = this.sanitizeNumber(updates.height)
-    if (updates.weight !== undefined) sanitized.weight = this.sanitizeNumber(updates.weight)
-    if (updates.allergies !== undefined) sanitized.allergies = this.sanitizeStringArray(updates.allergies)
-    if (updates.chronic_illnesses !== undefined) sanitized.chronic_illnesses = this.sanitizeStringArray(updates.chronic_illnesses)
-    if (updates.activity_level !== undefined) sanitized.activity_level = this.sanitizeString(updates.activity_level) as any
-    if (updates.fitness_goal !== undefined) sanitized.fitness_goal = this.sanitizeString(updates.fitness_goal) as any
-    if (updates.language !== undefined) sanitized.language = this.sanitizeString(updates.language)
-
-    return sanitized
+  
+  // Validate nutrition object
+  if (suggestion.nutrition) {
+    const nutritionFields = ['protein', 'carbs', 'fat'];
+    for (const field of nutritionFields) {
+      if (typeof suggestion.nutrition[field] !== 'number' || suggestion.nutrition[field] < 0) {
+        errors.push({ 
+          field: `suggestion_${index}_nutrition_${field}`, 
+          message: `Meal ${index + 1} has invalid nutrition data.` 
+        });
+      }
+    }
   }
-}
+  
+  // Validate arrays
+  if (!Array.isArray(suggestion.ingredients)) {
+    errors.push({ 
+      field: `suggestion_${index}_ingredients`, 
+      message: `Meal ${index + 1} has invalid ingredients list.` 
+    });
+  }
+  
+  if (!Array.isArray(suggestion.quickInstructions)) {
+    errors.push({ 
+      field: `suggestion_${index}_instructions`, 
+      message: `Meal ${index + 1} has invalid instructions.` 
+    });
+  }
+  
+  return errors;
+};
+
+// Sanitize user profile data
+export const sanitizeUserProfile = (profile: any) => {
+  return {
+    allergies: sanitizeArray(profile.allergies || []),
+    dietaryRestrictions: sanitizeArray(profile.dietaryRestrictions || []),
+    cuisinePreferences: sanitizeArray(profile.cuisinePreferences || []),
+    dislikedFoods: sanitizeArray(profile.dislikedFoods || []),
+    activityLevel: sanitizeString(profile.activityLevel || 'moderately-active'),
+    primaryGoal: sanitizeString(profile.primaryGoal || 'maintain-weight')
+  };
+};
+
+// Sanitize QuickMeal request
+export const sanitizeQuickMealRequest = (request: any) => {
+  return {
+    userId: sanitizeString(request.userId),
+    preferences: request.preferences ? {
+      servings: sanitizeNumber(request.preferences.servings),
+      maxPrepTime: sanitizeString(request.preferences.maxPrepTime),
+      diet: sanitizeString(request.preferences.diet),
+      cuisine: sanitizeString(request.preferences.cuisine),
+      mood: sanitizeString(request.preferences.mood),
+      budget: sanitizeString(request.preferences.budget)
+    } : {},
+    userProfile: sanitizeUserProfile(request.userProfile || {}),
+    availableIngredients: sanitizeArray(request.availableIngredients || []),
+    customRequests: sanitizeArray(request.customRequests || [])
+  };
+};

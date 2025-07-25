@@ -5,6 +5,9 @@ export { default as Card3 } from './Card3'
 export { default as Card4 } from './Card4'
 export { default as Card5 } from './Card5'
 
+// Home Screen Cards - Import from home directory
+export * from './home'
+
 // Export types
 export type { Card1Props } from './Card1'
 export type { Card2Props } from './Card2'
@@ -18,3 +21,4 @@ export type { Card5Props } from './Card5'
 // - Card3: List card with scrollable items (vertical or horizontal)
 // - Card4: Alert/notification card with status, icon, and actions
 // - Card5: Detailed content card with image, metadata, tags, and actions
+// - Home cards: See ./home directory for home screen specific cards

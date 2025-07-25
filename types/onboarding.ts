@@ -15,12 +15,12 @@ export interface OnboardingContextType {
 
 export interface OnboardingStep1Data {
   age: number
-  gender: 'male' | 'female' | 'other'
+  gender: 'male' | 'female' | 'other' | 'prefer_not_to_say'
 }
 
 export interface OnboardingStep2Data {
-  height: number // cm
-  weight: number // kg
+  height_cm: number
+  weight_kg: number
 }
 
 export interface OnboardingStep3Data {
@@ -29,8 +29,8 @@ export interface OnboardingStep3Data {
 }
 
 export interface OnboardingStep4Data {
-  activity_level: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active'
-  fitness_goal: 'lose_weight' | 'gain_weight' | 'maintain' | 'build_muscle'
+  activity_level: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'extremely_active'
+  primary_goal: 'lose_weight' | 'gain_weight' | 'maintain_weight' | 'build_muscle' | 'improve_health'
 }
 
 export const ALLERGY_OPTIONS = [
@@ -41,7 +41,7 @@ export const ALLERGY_OPTIONS = [
   'shellfish',
   'fish',
   'tree_nuts',
-  'other'
+  'none'
 ] as const
 
 export const CHRONIC_ILLNESS_OPTIONS = [
@@ -55,12 +55,45 @@ export const ACTIVITY_LEVELS = [
   { value: 'sedentary', label: 'Sedentary', description: 'Little to no exercise' },
   { value: 'lightly_active', label: 'Lightly Active', description: 'Light exercise 1-3 days/week' },
   { value: 'moderately_active', label: 'Moderately Active', description: 'Moderate exercise 3-5 days/week' },
-  { value: 'very_active', label: 'Very Active', description: 'Hard exercise 6-7 days/week' }
+  { value: 'very_active', label: 'Very Active', description: 'Hard exercise 6-7 days/week' },
+  { value: 'extremely_active', label: 'Extremely Active', description: 'Very hard exercise, physical job' }
 ] as const
 
 export const FITNESS_GOALS = [
   { value: 'lose_weight', label: 'Lose Weight', emoji: '🏃‍♀️' },
   { value: 'gain_weight', label: 'Gain Weight', emoji: '💪' },
-  { value: 'maintain', label: 'Maintain', emoji: '⚖️' },
-  { value: 'build_muscle', label: 'Build Muscle', emoji: '🏋️' }
+  { value: 'maintain_weight', label: 'Maintain Weight', emoji: '⚖️' },
+  { value: 'build_muscle', label: 'Build Muscle', emoji: '🏋️' },
+  { value: 'improve_health', label: 'Improve Health', emoji: '❤️' }
+] as const
+
+export const DIETARY_PREFERENCES_OPTIONS = [
+  'vegetarian',
+  'vegan',
+  'pescatarian',
+  'keto',
+  'paleo',
+  'mediterranean',
+  'low_carb',
+  'low_fat',
+  'gluten_free',
+  'dairy_free',
+  'none'
+] as const
+
+export const CUISINE_PREFERENCES_OPTIONS = [
+  'italian',
+  'mexican',
+  'turkish',
+  'chinese',
+  'japanese',
+  'thai',
+  'indian',
+  'mediterranean',
+  'american',
+  'french',
+  'greek',
+  'korean',
+  'vietnamese',
+  'middle_eastern',
 ] as const

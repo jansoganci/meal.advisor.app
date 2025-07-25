@@ -23,10 +23,10 @@ export class ProfileService {
         data,
         hasAge: !!data.age,
         hasGender: !!data.gender,
-        hasHeight: !!data.height,
-        hasWeight: !!data.weight,
+        hasHeight: !!data.height_cm,
+        hasWeight: !!data.weight_kg,
         hasActivityLevel: !!data.activity_level,
-        hasFitnessGoal: !!data.fitness_goal
+        hasPrimaryGoal: !!data.primary_goal
       })
 
       // Check if user exists in database first
@@ -59,14 +59,14 @@ export class ProfileService {
       }
 
       // Basic data validation before sanitization
-      if (!data.age || !data.gender || !data.height || !data.weight || !data.activity_level || !data.fitness_goal) {
+      if (!data.age || !data.gender || !data.height_cm || !data.weight_kg || !data.activity_level || !data.primary_goal) {
         const missing = []
         if (!data.age) missing.push('age')
         if (!data.gender) missing.push('gender') 
-        if (!data.height) missing.push('height')
-        if (!data.weight) missing.push('weight')
+        if (!data.height_cm) missing.push('height_cm')
+        if (!data.weight_kg) missing.push('weight_kg')
         if (!data.activity_level) missing.push('activity_level')
-        if (!data.fitness_goal) missing.push('fitness_goal')
+        if (!data.primary_goal) missing.push('primary_goal')
         
         console.error('❌ Missing required onboarding data:', missing)
         return { success: false, error: `Missing required data: ${missing.join(', ')}` }
@@ -89,34 +89,25 @@ export class ProfileService {
       const nutritionGoals = await this.calculateNutritionGoals(
         sanitizedData.age,
         sanitizedData.gender,
-        sanitizedData.height,
-        sanitizedData.weight,
+        sanitizedData.height_cm,
+        sanitizedData.weight_kg,
         sanitizedData.activity_level,
-        sanitizedData.fitness_goal
+        sanitizedData.primary_goal
       )
-
-      // Map onboarding data to database schema
-      const mapFitnessGoal = (goal: string) => {
-        switch (goal) {
-          case 'maintain': return 'maintain_weight'
-          case 'lose_weight': return 'lose_weight'
-          case 'gain_weight': return 'gain_weight'
-          case 'build_muscle': return 'build_muscle'
-          default: return 'maintain_weight'
-        }
-      }
 
       // Update the existing user record created by the auth trigger
       const profileData = {
         age: sanitizedData.age,
         gender: sanitizedData.gender,
-        height_cm: sanitizedData.height,
-        weight_kg: sanitizedData.weight,
+        height_cm: sanitizedData.height_cm,
+        weight_kg: sanitizedData.weight_kg,
         allergies: sanitizedData.allergies || [],
         chronic_illnesses: sanitizedData.chronic_illnesses || [],
         activity_level: sanitizedData.activity_level,
-        primary_goal: mapFitnessGoal(sanitizedData.fitness_goal),
-        preferred_language: sanitizedData.language || 'en',
+        primary_goal: sanitizedData.primary_goal,
+        dietary_preferences: sanitizedData.dietary_preferences || [],
+        cuisine_preferences: sanitizedData.cuisine_preferences || [],
+        preferred_language: sanitizedData.preferred_language || 'en',
         daily_calories: nutritionGoals.daily_calories,
         daily_protein_g: nutritionGoals.daily_protein,
         onboarding_completed: true,
@@ -129,10 +120,10 @@ export class ProfileService {
       console.log('🔍 Validating data against database constraints...')
       const constraintValidation = {
         age: sanitizedData.age >= 13 && sanitizedData.age <= 120,
-        height: sanitizedData.height >= 100 && sanitizedData.height <= 250,
-        weight: sanitizedData.weight >= 30 && sanitizedData.weight <= 300,
+        height_cm: sanitizedData.height_cm >= 100 && sanitizedData.height_cm <= 250,
+        weight_kg: sanitizedData.weight_kg >= 30 && sanitizedData.weight_kg <= 300,
         activity_level: ['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active'].includes(sanitizedData.activity_level),
-        primary_goal: ['lose_weight', 'maintain_weight', 'gain_weight', 'build_muscle', 'improve_health'].includes(mapFitnessGoal(sanitizedData.fitness_goal)),
+        primary_goal: ['lose_weight', 'maintain_weight', 'gain_weight', 'build_muscle', 'improve_health'].includes(sanitizedData.primary_goal),
         daily_calories: nutritionGoals.daily_calories >= 1000 && nutritionGoals.daily_calories <= 4000,
         daily_protein: nutritionGoals.daily_protein >= 20 && nutritionGoals.daily_protein <= 300
       }
@@ -251,8 +242,8 @@ export class ProfileService {
       }
 
       // If physical measurements or activity/goals are updated, recalculate nutrition goals
-      if (sanitizedUpdates.age || sanitizedUpdates.gender || sanitizedUpdates.height || 
-          sanitizedUpdates.weight || sanitizedUpdates.activity_level || sanitizedUpdates.fitness_goal) {
+      if (sanitizedUpdates.age || sanitizedUpdates.gender || sanitizedUpdates.height_cm || 
+          sanitizedUpdates.weight_kg || sanitizedUpdates.activity_level || sanitizedUpdates.primary_goal) {
         
         // Get current profile to fill in missing values
         const currentProfile = await this.getProfile(userId)
@@ -264,14 +255,14 @@ export class ProfileService {
         const nutritionGoals = await this.calculateNutritionGoals(
           sanitizedUpdates.age ?? profile.age,
           sanitizedUpdates.gender ?? profile.gender,
-          sanitizedUpdates.height ?? profile.height,
-          sanitizedUpdates.weight ?? profile.weight,
+          sanitizedUpdates.height_cm ?? profile.height_cm,
+          sanitizedUpdates.weight_kg ?? profile.weight_kg,
           sanitizedUpdates.activity_level ?? profile.activity_level,
-          sanitizedUpdates.fitness_goal ?? profile.fitness_goal
+          sanitizedUpdates.primary_goal ?? profile.primary_goal
         )
 
-        sanitizedUpdates.daily_calorie_goal = nutritionGoals.daily_calories
-        sanitizedUpdates.daily_protein_goal = nutritionGoals.daily_protein
+        sanitizedUpdates.daily_calories = nutritionGoals.daily_calories
+        sanitizedUpdates.daily_protein_g = nutritionGoals.daily_protein
       }
 
       const { data: profile, error } = await supabase
@@ -374,33 +365,33 @@ export class ProfileService {
   static async calculateNutritionGoals(
     age: number,
     gender: string,
-    height: number,
-    weight: number,
+    height_cm: number,
+    weight_kg: number,
     activityLevel: string,
-    fitnessGoal: string
+    primaryGoal: string
   ): Promise<NutritionGoals> {
     try {
       const { data, error } = await supabase.rpc('calculate_nutrition_goals', {
         p_age: age,
         p_gender: gender,
-        p_height: height,
-        p_weight: weight,
+        p_height: height_cm,
+        p_weight: weight_kg,
         p_activity_level: activityLevel,
-        p_fitness_goal: fitnessGoal
+        p_fitness_goal: primaryGoal
       })
 
       if (error) {
         // Fallback to client-side calculation
-        const calories = this.calculateDailyCalories(age, gender, height, weight, activityLevel)
-        const protein = this.calculateDailyProtein(weight, activityLevel, fitnessGoal)
+        const calories = this.calculateDailyCalories(age, gender, height_cm, weight_kg, activityLevel)
+        const protein = this.calculateDailyProtein(weight_kg, activityLevel, primaryGoal)
         
         // Apply fitness goal adjustment to calories
         let adjustedCalories = calories
-        if (fitnessGoal === 'lose_weight') {
+        if (primaryGoal === 'lose_weight') {
           adjustedCalories = Math.round(calories * 0.85)
-        } else if (fitnessGoal === 'gain_weight') {
+        } else if (primaryGoal === 'gain_weight') {
           adjustedCalories = Math.round(calories * 1.15)
-        } else if (fitnessGoal === 'build_muscle') {
+        } else if (primaryGoal === 'build_muscle') {
           adjustedCalories = Math.round(calories * 1.1)
         }
         
@@ -416,15 +407,15 @@ export class ProfileService {
       }
     } catch (err) {
       // Fallback to client-side calculation
-      const calories = this.calculateDailyCalories(age, gender, height, weight, activityLevel)
-      const protein = this.calculateDailyProtein(weight, activityLevel, fitnessGoal)
+      const calories = this.calculateDailyCalories(age, gender, height_cm, weight_kg, activityLevel)
+      const protein = this.calculateDailyProtein(weight_kg, activityLevel, primaryGoal)
       
       let adjustedCalories = calories
-      if (fitnessGoal === 'lose_weight') {
+      if (primaryGoal === 'lose_weight') {
         adjustedCalories = Math.round(calories * 0.85)
-      } else if (fitnessGoal === 'gain_weight') {
+      } else if (primaryGoal === 'gain_weight') {
         adjustedCalories = Math.round(calories * 1.15)
-      } else if (fitnessGoal === 'build_muscle') {
+      } else if (primaryGoal === 'build_muscle') {
         adjustedCalories = Math.round(calories * 1.1)
       }
       

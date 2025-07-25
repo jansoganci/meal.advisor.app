@@ -1,68 +1,47 @@
 import React from 'react'
-import { View, Text, StyleSheet } from 'react-native'
-import { Colors } from '@/constants/Colors'
-import { useColorScheme } from '@/hooks/useColorScheme'
-import { UserProfile } from '@/types/profile'
+import { StyleSheet, Text, View } from 'react-native'
 
 interface StatsCardProps {
-  profile: UserProfile
+  meals?: number
+  favorites?: number
+  weeks?: number
+  rating?: number
 }
 
-export const StatsCard: React.FC<StatsCardProps> = ({ profile }) => {
-  const colorScheme = useColorScheme()
-  const colors = Colors[colorScheme ?? 'light']
-
-  const getBMICategory = (bmi: number) => {
-    if (bmi < 18.5) return { category: 'Underweight', color: '#3B82F6' }
-    if (bmi < 25) return { category: 'Normal', color: '#10B981' }
-    if (bmi < 30) return { category: 'Overweight', color: '#F59E0B' }
-    return { category: 'Obese', color: '#EF4444' }
-  }
-
-  const bmiInfo = profile.bmi ? getBMICategory(profile.bmi) : null
-
+export const StatsCard: React.FC<StatsCardProps> = ({
+  meals = 127,
+  favorites = 32,
+  weeks = 12,
+  rating = 4.8
+}) => {
   return (
-    <View style={[styles.card, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
-      <Text style={[styles.title, { color: colors.text }]}>📊 Your Stats</Text>
+    <View style={styles.card}>
+      <Text style={styles.title}>Your Stats</Text>
       
-      <View style={styles.statsContainer}>
-        {profile.bmi && (
-          <View style={styles.statItem}>
-            <Text style={[styles.statLabel, { color: colors.text }]}>🔥 BMI</Text>
-            <Text style={[styles.statValue, { color: colors.text }]}>
-              {profile.bmi.toFixed(1)}
-            </Text>
-            {bmiInfo && (
-              <Text style={[styles.statCategory, { color: bmiInfo.color }]}>
-                {bmiInfo.category}
-              </Text>
-            )}
-          </View>
-        )}
+      <View style={styles.statsGrid}>
+        <View style={styles.statItem}>
+          <Text style={styles.statIcon}>🍽️</Text>
+          <Text style={styles.statValue}>{meals}</Text>
+          <Text style={styles.statLabel}>meals</Text>
+        </View>
         
-        {profile.daily_calorie_goal && (
-          <View style={styles.statItem}>
-            <Text style={[styles.statLabel, { color: colors.text }]}>🎯 Daily Calories</Text>
-            <Text style={[styles.statValue, { color: colors.text }]}>
-              {profile.daily_calorie_goal}
-            </Text>
-            <Text style={[styles.statUnit, { color: colors.text }]}>
-              calories
-            </Text>
-          </View>
-        )}
+        <View style={styles.statItem}>
+          <Text style={styles.statIcon}>❤️</Text>
+          <Text style={styles.statValue}>{favorites}</Text>
+          <Text style={styles.statLabel}>favorites</Text>
+        </View>
         
-        {profile.daily_protein_goal && (
-          <View style={styles.statItem}>
-            <Text style={[styles.statLabel, { color: colors.text }]}>💪 Daily Protein</Text>
-            <Text style={[styles.statValue, { color: colors.text }]}>
-              {profile.daily_protein_goal}g
-            </Text>
-            <Text style={[styles.statUnit, { color: colors.text }]}>
-              protein
-            </Text>
-          </View>
-        )}
+        <View style={styles.statItem}>
+          <Text style={styles.statIcon}>📅</Text>
+          <Text style={styles.statValue}>{weeks}</Text>
+          <Text style={styles.statLabel}>weeks</Text>
+        </View>
+        
+        <View style={styles.statItem}>
+          <Text style={styles.statIcon}>⭐</Text>
+          <Text style={styles.statValue}>{rating}</Text>
+          <Text style={styles.statLabel}>rating</Text>
+        </View>
       </View>
     </View>
   )
@@ -70,41 +49,45 @@ export const StatsCard: React.FC<StatsCardProps> = ({ profile }) => {
 
 const styles = StyleSheet.create({
   card: {
-    padding: 20,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    borderWidth: 1,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1A1A1A',
     marginBottom: 16,
   },
-  statsContainer: {
+  statsGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    flexWrap: 'wrap',
-    gap: 16,
+    justifyContent: 'space-between',
   },
   statItem: {
     alignItems: 'center',
-    minWidth: 80,
+    flex: 1,
   },
-  statLabel: {
-    fontSize: 14,
+  statIcon: {
+    fontSize: 24,
     marginBottom: 8,
-    opacity: 0.7,
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 4,
+    color: '#1A1A1A',
+    marginBottom: 2,
   },
-  statCategory: {
+  statLabel: {
     fontSize: 12,
-    fontWeight: '600',
+    color: '#666666',
+    textTransform: 'lowercase',
   },
-  statUnit: {
-    fontSize: 12,
-    opacity: 0.7,
-  },
-})
+}) 

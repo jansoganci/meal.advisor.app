@@ -1,3 +1,13 @@
+import structuredClone from 'structured-clone';
+if (typeof global.structuredClone !== 'function') {
+  global.structuredClone = structuredClone
+}
+
+import { Buffer } from 'buffer';
+if (typeof global.Buffer === 'undefined') {
+  global.Buffer = Buffer
+}
+
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
