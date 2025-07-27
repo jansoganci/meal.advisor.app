@@ -62,7 +62,7 @@ export const MealSuggestionCard: React.FC<MealSuggestionCardProps> = ({
           <ThemedView style={styles.metaItem}>
             <ThemedText style={styles.metaIcon}>⏱️</ThemedText>
             <ThemedText style={styles.metaText}>
-              {formatTime(suggestion.totalTime)}
+              {suggestion.totalTime}
             </ThemedText>
           </ThemedView>
           

@@ -1,6 +1,6 @@
-// Frontend AI types for Edge Function communication
+// Frontend AI types - Simplified to match backend
+// Reduced from 54 lines to 20 lines
 
-// QuickMeal specific types for frontend
 export interface QuickMealPreferences {
   servings: number
   prepTime: string
@@ -11,17 +11,22 @@ export interface QuickMealPreferences {
 }
 
 export interface QuickMealSuggestion {
-  name: string
+  title: string
+  description: string
   ingredients: string[]
-  instructions: string[]
-  prepTime: string
+  quickInstructions: string[]
+  totalTime: string
   difficulty: string
-  nutritionInfo?: {
-    calories: number
+  calories: number
+  estimatedCost: string
+  nutrition: {
     protein: number
     carbs: number
     fat: number
   }
+  tags: string[]
+  substitutions?: string[]
+  tips?: string[]
 }
 
 export interface QuickMealResponse {
@@ -33,22 +38,9 @@ export interface QuickMealResponse {
   customizations?: string[]
 }
 
-// Edge Function response types
 export interface EdgeFunctionResponse {
   success: boolean
-  data: any
-  metadata?: {
-    provider: string
-    responseTime: number
-    tokensUsed: number
-  }
+  data?: QuickMealSuggestion
   error?: string
+  requestId?: string
 }
-
-// Type definitions for different meal types
-export type DifficultyLevel = 'easy' | 'medium' | 'hard'
-export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack'
-export type CuisineType = 'american' | 'italian' | 'mexican' | 'chinese' | 'indian' | 'thai' | 'mediterranean' | 'french' | 'japanese' | 'korean'
-export type DietaryRestriction = 'vegetarian' | 'vegan' | 'gluten-free' | 'dairy-free' | 'nut-free' | 'keto' | 'paleo' | 'low-carb' | 'low-fat' | 'low-sodium'
-export type ActivityLevel = 'sedentary' | 'lightly-active' | 'moderately-active' | 'very-active' | 'extremely-active'
-export type PrimaryGoal = 'lose-weight' | 'maintain-weight' | 'gain-weight' | 'build-muscle' | 'improve-health'

@@ -11,5 +11,6 @@ export interface AuthContextType {
   signUp: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
+  signInWithGoogle: () => Promise<void>
   clearError: () => void
 }

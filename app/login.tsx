@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 export default function LoginScreen() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const { signIn, loading, error, clearError } = useAuth()
+  const { signIn, signInWithGoogle, loading, error, clearError } = useAuth()
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
 
@@ -25,6 +25,15 @@ export default function LoginScreen() {
 
     try {
       await signIn(email, password)
+      // Navigation is handled in AuthContext
+    } catch (err) {
+      // Error is handled in AuthContext
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle()
       // Navigation is handled in AuthContext
     } catch (err) {
       // Error is handled in AuthContext
@@ -96,6 +105,27 @@ export default function LoginScreen() {
           >
             Sign In
           </Button>
+
+          {/* OR Divider */}
+          <View style={styles.orContainer}>
+            <View style={[styles.orLine, { backgroundColor: colors.border }]} />
+            <ThemedText style={[styles.orText, { color: colors.textSecondary }]}>
+              or
+            </ThemedText>
+            <View style={[styles.orLine, { backgroundColor: colors.border }]} />
+          </View>
+
+          {/* Google Sign In Button */}
+          <Button
+            onPress={handleGoogleSignIn}
+            loading={loading}
+            disabled={loading}
+            fullWidth
+            variant="outline"
+            style={styles.googleButton}
+          >
+            Continue with Google
+          </Button>
         </View>
 
         {/* Links */}
@@ -160,6 +190,24 @@ const styles = StyleSheet.create({
   },
   signInButton: {
     marginTop: 8,
+  },
+  orContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginVertical: 24,
+  },
+  orLine: {
+    flex: 1,
+    height: 1,
+  },
+  orText: {
+    marginHorizontal: 10,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  googleButton: {
+    marginTop: 16,
   },
   links: {
     alignItems: 'center',

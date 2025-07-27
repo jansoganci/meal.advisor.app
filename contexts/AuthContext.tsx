@@ -1,4 +1,6 @@
 import { supabase } from '@/lib/supabase'
+import * as AuthSession from 'expo-auth-session'
+import * as Crypto from 'expo-crypto'
 import { router } from 'expo-router'
 import React, { createContext, useContext, useEffect, useState } from 'react'
 
@@ -15,6 +17,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
+  signInWithGoogle: () => Promise<void>
   clearError: () => void
 }
 
@@ -67,8 +70,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Check for existing session on app start
     const initializeAuth = async () => {
       try {
+        console.log('🔐 Initializing auth...')
         const { data: { session } } = await supabase.auth.getSession()
+        
+        console.log('🔐 Auth Debug:', {
+          sessionExists: !!session,
+          userExists: !!session?.user,
+          userEmail: session?.user?.email,
+          sessionExpiry: session?.expires_at,
+          accessToken: !!session?.access_token
+        })
+        
         if (session?.user) {
+          console.log('✅ Found existing session for user:', session.user.email)
           setUser({
             id: session.user.id,
             email: session.user.email!
@@ -83,18 +97,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           
           if (profileError || !profile) {
             // User doesn't have a profile, will be handled by index.tsx
-            console.log('User authenticated but no profile found')
+            console.log('⚠️ User authenticated but no profile found')
           } else if (!profile.onboarding_completed) {
             // User has profile but onboarding not completed, will be handled by index.tsx
-            console.log('User authenticated but onboarding not completed')
+            console.log('⚠️ User authenticated but onboarding not completed')
           } else {
             // User has completed profile
-            console.log('User authenticated with completed profile')
+            console.log('✅ User authenticated with completed profile')
           }
+        } else {
+          console.log('❌ No existing session found')
         }
       } catch (err) {
-        console.error('Auth initialization error:', err)
+        console.error('❌ Auth initialization error:', err)
       } finally {
+        console.log('🔐 Auth initialization complete, loading = false')
         setLoading(false)
       }
     }
@@ -227,12 +244,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signOut = async (): Promise<void> => {
     try {
       setLoading(true)
+      console.log('🚪 Starting logout process...')
+      
+      // Clear Supabase session
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       
+      // Clear local auth state
       setUser(null)
+      setError(null)
+      
+      console.log('✅ Complete logout successful - redirecting to login')
       router.replace('/login')
     } catch (err: any) {
+      console.error('❌ Logout error:', err)
       setError(err.message || 'Sign out failed')
     } finally {
       setLoading(false)
@@ -254,6 +279,99 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
+  const signInWithGoogle = async (): Promise<void> => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Configure the auth request
+      const redirectUri = AuthSession.makeRedirectUri()
+
+      const clientId = '179439935291-l9rs304lha1olrhmrf4udbq8mptmbc53.apps.googleusercontent.com'
+      
+      // Create auth request
+      const authRequest = new AuthSession.AuthRequest({
+        clientId,
+        scopes: ['openid', 'profile', 'email'],
+        redirectUri,
+        responseType: AuthSession.ResponseType.Code,
+        codeChallenge: await Crypto.digestStringAsync(
+          Crypto.CryptoDigestAlgorithm.SHA256,
+          Math.random().toString(36),
+          { encoding: Crypto.CryptoEncoding.BASE64 }
+        ),
+        codeChallengeMethod: AuthSession.CodeChallengeMethod.S256,
+      })
+
+      // Open the browser for authentication
+      const result = await authRequest.promptAsync({
+        authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+      })
+
+      if (result.type === 'success') {
+        // Exchange the authorization code for tokens
+        const tokenResponse = await AuthSession.exchangeCodeAsync(
+          {
+            clientId,
+            code: result.params.code,
+            redirectUri,
+            extraParams: {},
+          },
+          {
+            tokenEndpoint: 'https://oauth2.googleapis.com/token',
+          }
+        )
+
+        if (tokenResponse.idToken) {
+          // Sign in to Supabase with the Google ID token
+          const { data, error } = await supabase.auth.signInWithIdToken({
+            provider: 'google',
+            token: tokenResponse.idToken,
+          })
+
+          if (error) throw error
+
+          if (data.user) {
+            setUser({
+              id: data.user.id,
+              email: data.user.email!
+            })
+            
+            // Check if user has a profile before navigating
+            const { data: profile, error: profileError } = await supabase
+              .from('users')
+              .select('id, onboarding_completed')
+              .eq('id', data.user.id)
+              .single()
+            
+            if (profileError || !profile) {
+              // User doesn't have a profile, redirect to onboarding
+              router.replace('/(onboarding)/step1')
+            } else if (!profile.onboarding_completed) {
+              // User has profile but onboarding not completed
+              router.replace('/(onboarding)/step1')
+            } else {
+              // User has completed profile, navigate to main app
+              router.replace('/(tabs)')
+            }
+          }
+        } else {
+          throw new Error('No ID token received from Google')
+        }
+      } else if (result.type === 'error') {
+        throw new Error(result.params?.error_description || 'OAuth authentication failed')
+      } else {
+        // User cancelled the authentication
+        throw new Error('Authentication cancelled')
+      }
+    } catch (err: any) {
+      setError(err.message || 'Google sign in failed')
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const clearError = () => {
     setError(null)
   }
@@ -266,6 +384,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signUp,
     signOut,
     resetPassword,
+    signInWithGoogle,
     clearError,
   }
 

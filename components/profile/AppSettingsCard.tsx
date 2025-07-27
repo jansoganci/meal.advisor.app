@@ -1,7 +1,9 @@
+import { useAuth } from '@/contexts/AuthContext'
 import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 export const AppSettingsCard: React.FC = () => {
+  const { signOut, loading } = useAuth()
   return (
     <View style={styles.card}>
       <Text style={styles.title}>App Settings</Text>
@@ -37,11 +39,15 @@ export const AppSettingsCard: React.FC = () => {
           <Text style={styles.arrowIcon}>›</Text>
         </View>
         
-        <View style={[styles.settingRow, styles.signOutRow]}>
+        <TouchableOpacity 
+          style={[styles.settingRow, styles.signOutRow]}
+          onPress={signOut}
+          disabled={loading}
+        >
           <Text style={styles.settingIcon}>🚪</Text>
           <Text style={[styles.settingLabel, styles.signOutText]}>Sign Out</Text>
           <Text style={styles.arrowIcon}>›</Text>
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   )

@@ -262,3 +262,56 @@ export const sanitizeQuickMealRequest = (request: any) => {
     customRequests: sanitizeArray(request.customRequests || [])
   };
 };
+
+// Profile and Onboarding Validation Services
+export class SanitizationService {
+  static sanitizeOnboardingData(data: any) {
+    return {
+      activity_level: sanitizeString(data.activity_level),
+      age: sanitizeNumber(data.age),
+      allergies: sanitizeArray(data.allergies),
+      chronic_illnesses: sanitizeArray(data.chronic_illnesses),
+      gender: sanitizeString(data.gender),
+      height_cm: sanitizeNumber(data.height_cm),
+      language: sanitizeString(data.language),
+      primary_goal: sanitizeString(data.primary_goal),
+      weight_kg: sanitizeNumber(data.weight_kg)
+    };
+  }
+
+  static sanitizeProfileUpdate(updates: any) {
+    const sanitized: any = {};
+    
+    if (updates.activity_level) sanitized.activity_level = sanitizeString(updates.activity_level);
+    if (updates.age) sanitized.age = sanitizeNumber(updates.age);
+    if (updates.allergies) sanitized.allergies = sanitizeArray(updates.allergies);
+    if (updates.chronic_illnesses) sanitized.chronic_illnesses = sanitizeArray(updates.chronic_illnesses);
+    if (updates.gender) sanitized.gender = sanitizeString(updates.gender);
+    if (updates.height_cm) sanitized.height_cm = sanitizeNumber(updates.height_cm);
+    if (updates.language) sanitized.language = sanitizeString(updates.language);
+    if (updates.primary_goal) sanitized.primary_goal = sanitizeString(updates.primary_goal);
+    if (updates.weight_kg) sanitized.weight_kg = sanitizeNumber(updates.weight_kg);
+    
+    return sanitized;
+  }
+}
+
+export class ValidationService {
+  static validateOnboardingData(data: any) {
+    const errors: string[] = [];
+    
+    // Basic validation
+    if (!data.activity_level) errors.push('Activity level is required');
+    if (!data.age || data.age < 13 || data.age > 120) errors.push('Valid age is required (13-120)');
+    if (!data.gender) errors.push('Gender is required');
+    if (!data.height_cm || data.height_cm < 100 || data.height_cm > 250) errors.push('Valid height is required (100-250cm)');
+    if (!data.language) errors.push('Language is required');
+    if (!data.primary_goal) errors.push('Primary goal is required');
+    if (!data.weight_kg || data.weight_kg < 30 || data.weight_kg > 300) errors.push('Valid weight is required (30-300kg)');
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+}

@@ -20,15 +20,18 @@ interface ProfileProviderProps {
 export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) => {
   const { user } = useAuth()
   const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true) // Start with true to prevent premature routing
   const [error, setError] = useState<string | null>(null)
 
   // Load profile when user changes
   useEffect(() => {
     if (user) {
+      console.log('👤 User detected, loading profile for:', user.email)
       refreshProfile()
     } else {
+      console.log('❌ No user, clearing profile state')
       setProfile(null)
+      setLoading(false) // No user means no profile to load
     }
   }, [user])
 
@@ -99,23 +102,35 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
       return false
     }
 
+    console.log('🔄 Starting profile refresh for user:', user.id)
     setLoading(true)
     setError(null)
 
     try {
       const result = await ProfileService.getProfile(user.id)
       
+      console.log('👤 Profile Debug:', {
+        userId: user.id,
+        serviceCallSuccess: result.success,
+        profileExists: !!result.data,
+        onboardingComplete: result.data?.onboarding_completed,
+        profileError: result.error
+      })
+      
       if (result.success && result.data) {
+        console.log('✅ Profile loaded successfully:', result.data.onboarding_completed ? 'onboarding complete' : 'onboarding incomplete')
         setProfile(result.data)
         setLoading(false)
         return true
       } else {
         // Profile doesn't exist yet - this is normal for new users
+        console.log('⚠️ No profile found for user (normal for new users)')
         setProfile(null)
         setLoading(false)
         return false
       }
     } catch (err) {
+      console.error('❌ Error loading profile:', err)
       setError('An unexpected error occurred')
       setLoading(false)
       return false

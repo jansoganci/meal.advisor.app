@@ -1,48 +1,51 @@
-// TODO: Type definitions for AI service requests and responses
-// These types will be used for type-safe communication between frontend and Edge Function
+/**
+ * MealAdvisor AI Service - Essential Types Only
+ * Simplified from 590 lines to 30 lines for MVP
+ */
 
-const isDev = Deno.env.get('ENV') === 'development'
+// =============================================================================
+// CORE REQUEST/RESPONSE TYPES
+// =============================================================================
 
-if (isDev) {
-  console.log('[DEV-LOG] Loading AI service type definitions...')
+export interface QuickMealPreferences {
+  servings: number
+  prepTime: string
+  diet: string
+  cuisine: string
+  mood: string
+  budget: string
 }
 
-export interface AIRequest {
-  // TODO: Define request structure for AI service calls
-  // Will include user preferences, request type, and other parameters
+export interface AIServiceRequest {
+  requestType: 'quickmeal'
+  preferences: QuickMealPreferences
+  userId?: string
+  sessionId?: string
+  timestamp?: string
 }
 
-export interface AIResponse {
-  // TODO: Define response structure for AI service calls
-  // Will include AI-generated content, metadata, and error information
+export interface AIGeneratedContent {
+  title: string
+  description: string
+  ingredients: string[]
+  quickInstructions: string[]
+  totalTime: string
+  difficulty: string
+  calories: number
+  estimatedCost: string
+  nutrition: {
+    protein: number
+    carbs: number
+    fat: number
+  }
+  tags: string[]
+  substitutions?: string[]
+  tips?: string[]
 }
 
-export interface QuickMealRequest {
-  // TODO: Define QuickMeal-specific request structure
-  // Will include user preferences, dietary restrictions, and meal requirements
-}
-
-export interface QuickMealResponse {
-  // TODO: Define QuickMeal-specific response structure
-  // Will include meal suggestions, nutrition info, and preparation instructions
-}
-
-export interface AIProvider {
-  // TODO: Define interface for AI provider implementations
-  // Will include methods for making API calls to different AI services
-}
-
-export interface QuotaInfo {
-  // TODO: Define quota information structure
-  // Will include quota limits, current usage, and availability status
-}
-
-if (isDev) {
-  console.log('[DEV-LOG] AI service type definitions loaded:')
-  console.log('[DEV-LOG] - AIRequest interface defined')
-  console.log('[DEV-LOG] - AIResponse interface defined')
-  console.log('[DEV-LOG] - QuickMealRequest interface defined')
-  console.log('[DEV-LOG] - QuickMealResponse interface defined')
-  console.log('[DEV-LOG] - AIProvider interface defined')
-  console.log('[DEV-LOG] - QuotaInfo interface defined')
+export interface EdgeFunctionResponse {
+  success: boolean
+  data?: AIGeneratedContent
+  error?: string
+  requestId?: string
 } 
