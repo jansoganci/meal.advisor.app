@@ -19,6 +19,12 @@ export const VALID_CUISINES = ['Any', 'Italian', 'Mexican', 'Asian', 'Mediterran
 export const VALID_MOODS = ['Quick', 'Comfort', 'Healthy', 'Indulgent', 'Light', 'Spicy', 'Sweet', 'Savory'];
 export const VALID_BUDGETS = ['$', '$$', '$$$', 'Any'];
 
+// Weekly Plan validation constants
+export const VALID_GOALS = ['Lose Weight', 'Gain Muscle', 'Maintain', 'Build Strength'];
+export const VALID_MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
+export const VALID_WEEKLY_CUISINES = ['Mediterranean', 'Asian', 'Italian', 'Mexican'];
+export const VALID_PLAN_FOCUS = ['Quick & Easy', 'Try New Recipes', 'Healthy Focus', 'Comfort Foods'];
+
 // Sanitization functions
 export const sanitizeString = (value: string): string => {
   if (typeof value !== 'string') return '';
@@ -202,100 +208,79 @@ export const validateQuickMealSuggestion = (suggestion: any, index: number): Val
     }
   }
   
-  // Validate nutrition object
-  if (suggestion.nutrition) {
-    const nutritionFields = ['protein', 'carbs', 'fat'];
-    for (const field of nutritionFields) {
-      if (typeof suggestion.nutrition[field] !== 'number' || suggestion.nutrition[field] < 0) {
-        errors.push({ 
-          field: `suggestion_${index}_nutrition_${field}`, 
-          message: `Meal ${index + 1} has invalid nutrition data.` 
-        });
-      }
-    }
-  }
-  
   // Validate arrays
-  if (!Array.isArray(suggestion.ingredients)) {
+  if (suggestion.ingredients && !Array.isArray(suggestion.ingredients)) {
     errors.push({ 
       field: `suggestion_${index}_ingredients`, 
-      message: `Meal ${index + 1} has invalid ingredients list.` 
+      message: `Meal ${index + 1} ingredients must be a list.` 
     });
   }
   
-  if (!Array.isArray(suggestion.quickInstructions)) {
+  if (suggestion.quickInstructions && !Array.isArray(suggestion.quickInstructions)) {
     errors.push({ 
       field: `suggestion_${index}_instructions`, 
-      message: `Meal ${index + 1} has invalid instructions.` 
+      message: `Meal ${index + 1} instructions must be a list.` 
+    });
+  }
+  
+  // Validate nutrition object
+  if (suggestion.nutrition && typeof suggestion.nutrition !== 'object') {
+    errors.push({ 
+      field: `suggestion_${index}_nutrition`, 
+      message: `Meal ${index + 1} nutrition information must be an object.` 
+    });
+  }
+  
+  // Validate calories
+  if (suggestion.calories && (typeof suggestion.calories !== 'number' || suggestion.calories <= 0)) {
+    errors.push({ 
+      field: `suggestion_${index}_calories`, 
+      message: `Meal ${index + 1} must have a valid calorie count.` 
     });
   }
   
   return errors;
 };
 
-// Sanitize user profile data
-export const sanitizeUserProfile = (profile: any) => {
-  return {
-    allergies: sanitizeArray(profile.allergies || []),
-    dietaryRestrictions: sanitizeArray(profile.dietaryRestrictions || []),
-    cuisinePreferences: sanitizeArray(profile.cuisinePreferences || []),
-    dislikedFoods: sanitizeArray(profile.dislikedFoods || []),
-    activityLevel: sanitizeString(profile.activityLevel || 'moderately-active'),
-    primaryGoal: sanitizeString(profile.primaryGoal || 'maintain-weight')
-  };
+// Output validation helper
+export const validateOutputFormat = (data: any, expectedFields: string[]): ValidationError[] => {
+  const errors: ValidationError[] = [];
+  
+  if (!data || typeof data !== 'object') {
+    errors.push({ field: 'data', message: 'Invalid data format received.' });
+    return errors;
+  }
+  
+  for (const field of expectedFields) {
+    if (!data[field]) {
+      errors.push({ field, message: `Missing required field: ${field}.` });
+    }
+  }
+  
+  return errors;
 };
 
-// Sanitize QuickMeal request
-export const sanitizeQuickMealRequest = (request: any) => {
-  return {
-    userId: sanitizeString(request.userId),
-    preferences: request.preferences ? {
-      servings: sanitizeNumber(request.preferences.servings),
-      maxPrepTime: sanitizeString(request.preferences.maxPrepTime),
-      diet: sanitizeString(request.preferences.diet),
-      cuisine: sanitizeString(request.preferences.cuisine),
-      mood: sanitizeString(request.preferences.mood),
-      budget: sanitizeString(request.preferences.budget)
-    } : {},
-    userProfile: sanitizeUserProfile(request.userProfile || {}),
-    availableIngredients: sanitizeArray(request.availableIngredients || []),
-    customRequests: sanitizeArray(request.customRequests || [])
-  };
+// General input sanitization
+export const sanitizeAndValidateInput = (input: any, maxLength: number = 1000): string => {
+  if (typeof input !== 'string') {
+    return '';
+  }
+  
+  return input
+    .trim()
+    .slice(0, maxLength)
+    .replace(/[<>]/g, '') // Remove potential HTML/script tags
+    .replace(/\s+/g, ' '); // Normalize whitespace
 };
 
-// Profile and Onboarding Validation Services
-export class SanitizationService {
-  static sanitizeOnboardingData(data: any) {
-    return {
-      activity_level: sanitizeString(data.activity_level),
-      age: sanitizeNumber(data.age),
-      allergies: sanitizeArray(data.allergies),
-      chronic_illnesses: sanitizeArray(data.chronic_illnesses),
-      gender: sanitizeString(data.gender),
-      height_cm: sanitizeNumber(data.height_cm),
-      language: sanitizeString(data.language),
-      primary_goal: sanitizeString(data.primary_goal),
-      weight_kg: sanitizeNumber(data.weight_kg)
-    };
-  }
+// Error message formatter
+export const formatValidationErrors = (errors: ValidationError[]): string => {
+  if (errors.length === 0) return '';
+  if (errors.length === 1) return errors[0].message;
+  return `Multiple errors: ${errors.map(e => e.message).join(', ')}`;
+};
 
-  static sanitizeProfileUpdate(updates: any) {
-    const sanitized: any = {};
-    
-    if (updates.activity_level) sanitized.activity_level = sanitizeString(updates.activity_level);
-    if (updates.age) sanitized.age = sanitizeNumber(updates.age);
-    if (updates.allergies) sanitized.allergies = sanitizeArray(updates.allergies);
-    if (updates.chronic_illnesses) sanitized.chronic_illnesses = sanitizeArray(updates.chronic_illnesses);
-    if (updates.gender) sanitized.gender = sanitizeString(updates.gender);
-    if (updates.height_cm) sanitized.height_cm = sanitizeNumber(updates.height_cm);
-    if (updates.language) sanitized.language = sanitizeString(updates.language);
-    if (updates.primary_goal) sanitized.primary_goal = sanitizeString(updates.primary_goal);
-    if (updates.weight_kg) sanitized.weight_kg = sanitizeNumber(updates.weight_kg);
-    
-    return sanitized;
-  }
-}
-
+// Validation class for other components to extend
 export class ValidationService {
   static validateOnboardingData(data: any) {
     const errors: string[] = [];
@@ -315,3 +300,164 @@ export class ValidationService {
     };
   }
 }
+
+// =============================================================================
+// WEEKLY PLAN VALIDATION
+// =============================================================================
+
+export interface WeeklyPlanValidationResult {
+  isValid: boolean;
+  errors: ValidationError[];
+  sanitizedData?: any;
+}
+
+// Weekly Plan validation functions
+export const validateWeeklyGoal = (value: any): ValidationError | null => {
+  const sanitized = sanitizeString(value);
+  if (!sanitized) {
+    return { field: 'goal', message: 'Please select a fitness goal.' };
+  }
+  if (!VALID_GOALS.includes(sanitized)) {
+    return { field: 'goal', message: 'Please select a valid fitness goal.' };
+  }
+  return null;
+};
+
+export const validateWeeklyMeals = (value: any): ValidationError | null => {
+  const sanitized = sanitizeArray(value);
+  if (sanitized.length === 0) {
+    return { field: 'meals', message: 'Please select at least one meal type.' };
+  }
+  for (const meal of sanitized) {
+    if (!VALID_MEALS.includes(meal)) {
+      return { field: 'meals', message: `Invalid meal type: ${meal}` };
+    }
+  }
+  return null;
+};
+
+export const validateWeeklyCuisines = (value: any): ValidationError | null => {
+  const sanitized = sanitizeArray(value);
+  // Cuisines are optional, so empty array is valid
+  for (const cuisine of sanitized) {
+    if (!VALID_WEEKLY_CUISINES.includes(cuisine)) {
+      return { field: 'cuisines', message: `Invalid cuisine type: ${cuisine}` };
+    }
+  }
+  return null;
+};
+
+export const validatePlanFocus = (value: any): ValidationError | null => {
+  const sanitized = sanitizeString(value);
+  if (!sanitized) {
+    return { field: 'planFocus', message: 'Please select a plan focus.' };
+  }
+  if (!VALID_PLAN_FOCUS.includes(sanitized)) {
+    return { field: 'planFocus', message: 'Please select a valid plan focus.' };
+  }
+  return null;
+};
+
+export const validateCalories = (value: any): ValidationError | null => {
+  if (value === undefined || value === null) {
+    return null; // Optional field
+  }
+  const num = sanitizeNumber(value);
+  if (num === null) {
+    return { field: 'calories', message: 'Please enter a valid calorie amount.' };
+  }
+  if (num < 1000 || num > 4000) {
+    return { field: 'calories', message: 'Calories must be between 1000 and 4000.' };
+  }
+  return null;
+};
+
+export const validateProtein = (value: any): ValidationError | null => {
+  if (value === undefined || value === null) {
+    return null; // Optional field
+  }
+  const num = sanitizeNumber(value);
+  if (num === null) {
+    return { field: 'protein', message: 'Please enter a valid protein amount.' };
+  }
+  if (num < 20 || num > 300) {
+    return { field: 'protein', message: 'Protein must be between 20 and 300 grams.' };
+  }
+  return null;
+};
+
+// Main validation function for WeeklyPlan preferences
+export const validateWeeklyPlanPreferences = (preferences: any): WeeklyPlanValidationResult => {
+  const errors: ValidationError[] = [];
+  
+  // Validate required fields
+  const goalError = validateWeeklyGoal(preferences.goal);
+  if (goalError) errors.push(goalError);
+  
+  const mealsError = validateWeeklyMeals(preferences.meals);
+  if (mealsError) errors.push(mealsError);
+  
+  const cuisinesError = validateWeeklyCuisines(preferences.cuisines);
+  if (cuisinesError) errors.push(cuisinesError);
+  
+  const planFocusError = validatePlanFocus(preferences.planFocus);
+  if (planFocusError) errors.push(planFocusError);
+  
+  // Validate optional fields
+  const caloriesError = validateCalories(preferences.calories);
+  if (caloriesError) errors.push(caloriesError);
+  
+  const proteinError = validateProtein(preferences.protein);
+  if (proteinError) errors.push(proteinError);
+  
+  // If validation passes, return sanitized data
+  if (errors.length === 0) {
+    const sanitizedData = {
+      goal: sanitizeString(preferences.goal),
+      meals: sanitizeArray(preferences.meals),
+      cuisines: sanitizeArray(preferences.cuisines),
+      planFocus: sanitizeString(preferences.planFocus),
+      ...(preferences.calories !== undefined && { calories: sanitizeNumber(preferences.calories) }),
+      ...(preferences.protein !== undefined && { protein: sanitizeNumber(preferences.protein) })
+    };
+    
+    return {
+      isValid: true,
+      errors: [],
+      sanitizedData
+    };
+  }
+  
+  return {
+    isValid: false,
+    errors
+  };
+};
+
+// Validate WeeklyPlan AI response
+export const validateWeeklyPlanResponse = (response: any): WeeklyPlanValidationResult => {
+  const errors: ValidationError[] = [];
+  
+  // Check if response has required structure
+  if (!response || typeof response !== 'object') {
+    errors.push({ field: 'response', message: 'Invalid response format received.' });
+    return { isValid: false, errors };
+  }
+  
+  // Check if overview exists
+  if (!response.overview || typeof response.overview !== 'object') {
+    errors.push({ field: 'overview', message: 'Weekly plan overview is missing.' });
+  }
+  
+  // Check if days array exists and has 7 days
+  if (!Array.isArray(response.days)) {
+    errors.push({ field: 'days', message: 'Weekly plan days are missing.' });
+  } else if (response.days.length !== 7) {
+    errors.push({ field: 'days', message: 'Weekly plan must contain exactly 7 days.' });
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};

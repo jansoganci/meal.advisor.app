@@ -31,17 +31,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="quickmeal"
+        name="weeklyplan"
         options={{
-          title: 'Quick Meal',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="bolt.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="magnifyingglass" color={color} />,
+          title: 'Weekly',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} />,
         }}
       />
       <Tabs.Screen

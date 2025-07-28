@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '../supabase'
+import type { WeeklyPlanPreferences, WeeklyPlanResponse } from './types'
 
 // Simple types for client
 interface QuickMealPreferences {
@@ -82,6 +83,45 @@ export class EdgeAIService {
       nutritionNotes: [],
       customizations: []
     }
+  }
+
+  /**
+   * Generate Weekly Plan
+   */
+  async generateWeeklyPlan(preferences: WeeklyPlanPreferences): Promise<WeeklyPlanResponse> {
+    console.log('[EdgeAIService] Generating Weekly Plan')
+    
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) {
+      throw new Error('Please sign in to create a weekly plan.')
+    }
+
+    const response = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/ai-weekly`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({ preferences })
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      
+      if (response.status === 429) {
+        throw new Error('Weekly plan limit reached. Please upgrade to premium or try again later.')
+      }
+      
+      throw new Error(errorData.error || 'Plan creation failed. Please try again.')
+    }
+
+    const result = await response.json()
+    
+    if (!result.success || !result.data) {
+      throw new Error('AI service returned invalid response')
+    }
+
+    return result.data
   }
 }
 
