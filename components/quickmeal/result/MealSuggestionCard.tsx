@@ -7,24 +7,13 @@ import type { QuickMealSuggestion } from '@/lib/ai/types';
 
 interface MealSuggestionCardProps {
   suggestion: QuickMealSuggestion;
-  index: number;
   onPress?: () => void;
 }
 
 export const MealSuggestionCard: React.FC<MealSuggestionCardProps> = ({
   suggestion,
-  index,
   onPress
 }) => {
-  const formatTime = (minutes: number) => {
-    if (minutes < 60) {
-      return `${minutes} min`;
-    }
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-  };
-
   const formatCalories = (calories: number) => {
     return `${calories} cal`;
   };
@@ -51,11 +40,9 @@ export const MealSuggestionCard: React.FC<MealSuggestionCardProps> = ({
       <ThemedView style={styles.header}>
         <ThemedView style={styles.titleContainer}>
           <ThemedText style={styles.title}>{suggestion.title}</ThemedText>
-          <ThemedView style={styles.badge}>
-            <ThemedText style={styles.badgeText}>
-              #{index + 1}
-            </ThemedText>
-          </ThemedView>
+          <TouchableOpacity style={styles.favoriteButton}>
+            <ThemedText style={styles.favoriteIcon}>🤍</ThemedText>
+          </TouchableOpacity>
         </ThemedView>
         
         <ThemedView style={styles.metaContainer}>
@@ -95,31 +82,6 @@ export const MealSuggestionCard: React.FC<MealSuggestionCardProps> = ({
       <ThemedText style={styles.description}>
         {suggestion.description}
       </ThemedText>
-
-      {/* Nutrition Info */}
-      <ThemedView style={styles.nutritionContainer}>
-        <ThemedText style={styles.nutritionTitle}>Nutrition (per serving):</ThemedText>
-        <ThemedView style={styles.nutritionGrid}>
-          <ThemedView style={styles.nutritionItem}>
-            <ThemedText style={styles.nutritionLabel}>Protein</ThemedText>
-            <ThemedText style={styles.nutritionValue}>
-              {suggestion.nutrition.protein}g
-            </ThemedText>
-          </ThemedView>
-          <ThemedView style={styles.nutritionItem}>
-            <ThemedText style={styles.nutritionLabel}>Carbs</ThemedText>
-            <ThemedText style={styles.nutritionValue}>
-              {suggestion.nutrition.carbs}g
-            </ThemedText>
-          </ThemedView>
-          <ThemedView style={styles.nutritionItem}>
-            <ThemedText style={styles.nutritionLabel}>Fat</ThemedText>
-            <ThemedText style={styles.nutritionValue}>
-              {suggestion.nutrition.fat}g
-            </ThemedText>
-          </ThemedView>
-        </ThemedView>
-      </ThemedView>
 
       {/* Tags */}
       {suggestion.tags.length > 0 && (
@@ -164,18 +126,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     flex: 1,
   },
-  badge: {
-    backgroundColor: '#FF6B35',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: 8,
-  },
-  badgeText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-  },
   metaContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -202,36 +152,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     lineHeight: 22,
   },
-  nutritionContainer: {
-    backgroundColor: '#f8f9fa',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  nutritionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-    color: '#333',
-  },
-  nutritionGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  nutritionItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  nutritionLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 2,
-  },
-  nutritionValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-  },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -249,5 +169,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#495057',
     fontWeight: '500',
+  },
+  favoriteButton: {
+    padding: 4,
+  },
+  favoriteIcon: {
+    fontSize: 20,
   },
 }); 

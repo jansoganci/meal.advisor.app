@@ -12,6 +12,16 @@ import {
 import type { QuickMealSuggestion } from '@/lib/ai/types';
 import { validateQuickMealResponse } from '@/lib/validation';
 
+// Helper function to convert string ingredients to Ingredient objects
+const convertStringIngredientsToObjects = (ingredients: string[]) => {
+  return ingredients.map((ingredient) => ({
+    name: ingredient,
+    amount: 1, // Default amount since we don't have structured data
+    unit: '', // Empty unit since we don't have structured data
+    notes: ''
+  }));
+};
+
 export default function QuickMealResultScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -20,8 +30,6 @@ export default function QuickMealResultScreen() {
   const [mealPrepIdeas, setMealPrepIdeas] = useState<string[]>([]);
   const [timeSavingTips, setTimeSavingTips] = useState<string[]>([]);
   const [budgetTips, setBudgetTips] = useState<string[]>([]);
-  const [nutritionNotes, setNutritionNotes] = useState<string[]>([]);
-  const [customizations, setCustomizations] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,12 +58,6 @@ export default function QuickMealResultScreen() {
       if (params.budgetTips) {
         setBudgetTips(JSON.parse(params.budgetTips as string));
       }
-      if (params.nutritionNotes) {
-        setNutritionNotes(JSON.parse(params.nutritionNotes as string));
-      }
-      if (params.customizations) {
-        setCustomizations(JSON.parse(params.customizations as string));
-      }
     } catch (error) {
       console.error('Error parsing QuickMeal results:', error);
       setError('Failed to load meal suggestions. The data may be corrupted or incomplete.');
@@ -70,7 +72,12 @@ export default function QuickMealResultScreen() {
     } finally {
       setLoading(false);
     }
-  }, [params]);
+  }, [
+    params.suggestions,
+    params.mealPrepIdeas,
+    params.timeSavingTips,
+    params.budgetTips
+  ]);
 
   const handleBackPress = () => {
     router.back();
@@ -80,9 +87,8 @@ export default function QuickMealResultScreen() {
     router.back();
   };
 
-  const handleMealPress = (suggestion: QuickMealSuggestion) => {
-    // TODO: Navigate to detailed meal view or save to favorites
-    console.log('Meal selected:', suggestion.title);
+  const handleMealPress = () => {
+    // Handle meal selection - could navigate to detailed view or trigger favoriting
   };
 
   if (loading) {
@@ -92,7 +98,7 @@ export default function QuickMealResultScreen() {
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
             <ThemedText style={styles.backButtonText}>← Back</ThemedText>
           </TouchableOpacity>
-          <ThemedText style={styles.title}>🍽️ Your Quick Meals</ThemedText>
+          <ThemedText style={styles.title}>Your Quick Meals</ThemedText>
         </ThemedView>
         <ThemedView style={styles.loadingContainer}>
           <ThemedText style={styles.loadingText}>Loading your meal suggestions...</ThemedText>
@@ -108,7 +114,7 @@ export default function QuickMealResultScreen() {
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
             <ThemedText style={styles.backButtonText}>← Back</ThemedText>
           </TouchableOpacity>
-          <ThemedText style={styles.title}>🍽️ Your Quick Meals</ThemedText>
+          <ThemedText style={styles.title}>Your Quick Meals</ThemedText>
         </ThemedView>
         <ThemedView style={styles.errorContainer}>
           <ThemedText style={styles.errorIcon}>⚠️</ThemedText>
@@ -128,10 +134,7 @@ export default function QuickMealResultScreen() {
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
           <ThemedText style={styles.backButtonText}>← Back</ThemedText>
         </TouchableOpacity>
-        <ThemedText style={styles.title}>🍽️ Your Quick Meals</ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Here are your personalized meal suggestions!
-        </ThemedText>
+        <ThemedText style={styles.title}>Your Quick Meals</ThemedText>
       </ThemedView>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -140,8 +143,7 @@ export default function QuickMealResultScreen() {
           <ThemedView key={index} style={styles.suggestionContainer}>
             <MealSuggestionCard
               suggestion={suggestion}
-              index={index}
-              onPress={() => handleMealPress(suggestion)}
+              onPress={() => handleMealPress()}
             />
             
             <NutritionInfoCard
@@ -151,17 +153,16 @@ export default function QuickMealResultScreen() {
             />
             
             <InstructionsCard
-              ingredients={suggestion.ingredients}
+              ingredients={convertStringIngredientsToObjects(suggestion.ingredients)}
               instructions={suggestion.quickInstructions}
-              substitutions={suggestion.substitutions || []}
-              tips={suggestion.tips}
+              tips={suggestion.tips || []}
               title={`${suggestion.title} - Instructions`}
             />
           </ThemedView>
         ))}
 
         {/* Additional Tips Section */}
-        {(mealPrepIdeas.length > 0 || timeSavingTips.length > 0 || budgetTips.length > 0 || nutritionNotes.length > 0) && (
+        {(mealPrepIdeas.length > 0 || timeSavingTips.length > 0 || budgetTips.length > 0) && (
           <ThemedView style={styles.tipsSection}>
             <ThemedText style={styles.tipsSectionTitle}>Additional Tips & Ideas</ThemedText>
             
@@ -188,15 +189,6 @@ export default function QuickMealResultScreen() {
                 <ThemedText style={styles.tipCategoryTitle}>💰 Budget Tips:</ThemedText>
                 {budgetTips.map((tip, idx) => (
                   <ThemedText key={idx} style={styles.tipItem}>• {tip}</ThemedText>
-                ))}
-              </ThemedView>
-            )}
-
-            {nutritionNotes.length > 0 && (
-              <ThemedView style={styles.tipCategory}>
-                <ThemedText style={styles.tipCategoryTitle}>🥗 Nutrition Notes:</ThemedText>
-                {nutritionNotes.map((note, idx) => (
-                  <ThemedText key={idx} style={styles.tipItem}>• {note}</ThemedText>
                 ))}
               </ThemedView>
             )}

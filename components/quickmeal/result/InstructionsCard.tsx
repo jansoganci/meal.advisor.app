@@ -11,16 +11,9 @@ interface Ingredient {
   notes?: string;
 }
 
-interface Substitution {
-  original: string;
-  substitute: string;
-  reason: string;
-}
-
 interface InstructionsCardProps {
   ingredients: Ingredient[];
   instructions: string[];
-  substitutions?: Substitution[];
   tips?: string[];
   title?: string;
 }
@@ -28,25 +21,20 @@ interface InstructionsCardProps {
 export const InstructionsCard: React.FC<InstructionsCardProps> = ({
   ingredients,
   instructions,
-  substitutions = [],
   tips = [],
   title = 'Cooking Instructions'
 }) => {
   const [showIngredients, setShowIngredients] = useState(true);
   const [showInstructions, setShowInstructions] = useState(true);
-  const [showSubstitutions, setShowSubstitutions] = useState(substitutions.length > 0);
   const [showTips, setShowTips] = useState(tips.length > 0);
 
-  const toggleSection = (section: 'ingredients' | 'instructions' | 'substitutions' | 'tips') => {
+  const toggleSection = (section: 'ingredients' | 'instructions' | 'tips') => {
     switch (section) {
       case 'ingredients':
         setShowIngredients(!showIngredients);
         break;
       case 'instructions':
         setShowInstructions(!showInstructions);
-        break;
-      case 'substitutions':
-        setShowSubstitutions(!showSubstitutions);
         break;
       case 'tips':
         setShowTips(!showTips);
@@ -115,42 +103,6 @@ export const InstructionsCard: React.FC<InstructionsCardProps> = ({
           </ThemedView>
         )}
       </ThemedView>
-
-      {/* Substitutions Section */}
-      {substitutions.length > 0 && (
-        <ThemedView style={styles.section}>
-          <TouchableOpacity 
-            style={styles.sectionHeader}
-            onPress={() => toggleSection('substitutions')}
-          >
-            <ThemedText style={styles.sectionTitle}>🔄 Substitutions</ThemedText>
-            <ThemedText style={styles.toggleIcon}>
-              {showSubstitutions ? '▼' : '▶'}
-            </ThemedText>
-          </TouchableOpacity>
-          
-          {showSubstitutions && (
-            <ThemedView style={styles.sectionContent}>
-              {substitutions.map((substitution, index) => (
-                <ThemedView key={index} style={styles.substitutionItem}>
-                  <ThemedText style={styles.substitutionText}>
-                    <ThemedText style={styles.originalText}>
-                      {substitution.original}
-                    </ThemedText>
-                    {' → '}
-                    <ThemedText style={styles.substituteText}>
-                      {substitution.substitute}
-                    </ThemedText>
-                  </ThemedText>
-                  <ThemedText style={styles.substitutionReason}>
-                    ({substitution.reason})
-                  </ThemedText>
-                </ThemedView>
-              ))}
-            </ThemedView>
-          )}
-        </ThemedView>
-      )}
 
       {/* Tips Section */}
       {tips.length > 0 && (
@@ -261,36 +213,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  instructionStep: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    textAlign: 'center',
+  },
   instructionText: {
     fontSize: 14,
     color: '#333',
     lineHeight: 20,
-    flex: 1,
-  },
-  substitutionItem: {
-    marginBottom: 12,
-    padding: 12,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
-  },
-  substitutionText: {
-    fontSize: 14,
-    color: '#333',
-    lineHeight: 20,
-    marginBottom: 4,
-  },
-  originalText: {
-    fontWeight: '500',
-    color: '#dc3545',
-  },
-  substituteText: {
-    fontWeight: '500',
-    color: '#28a745',
-  },
-  substitutionReason: {
-    fontSize: 12,
-    color: '#666',
-    fontStyle: 'italic',
+    marginTop: 4,
   },
   tipItem: {
     marginBottom: 8,

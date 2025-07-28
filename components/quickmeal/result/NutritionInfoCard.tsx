@@ -38,26 +38,17 @@ export const NutritionInfoCard: React.FC<NutritionInfoCardProps> = ({
 
   return (
     <ThemedView style={styles.card}>
-      <ThemedText style={styles.title}>Nutrition Information</ThemedText>
-      
-      <ThemedView style={styles.caloriesContainer}>
-        <ThemedText style={styles.caloriesLabel}>Total Calories</ThemedText>
-        <ThemedText style={styles.caloriesValue}>{totalCalories} cal</ThemedText>
-        {servings > 1 && (
-          <ThemedText style={styles.servingsText}>
-            ({calories} cal per serving × {servings} servings)
-          </ThemedText>
-        )}
+      <ThemedView style={styles.header}>
+        <ThemedText style={styles.title}>Nutrition Information</ThemedText>
+        <ThemedView style={styles.caloriesBadge}>
+          <ThemedText style={styles.caloriesText}>{totalCalories} cal</ThemedText>
+        </ThemedView>
       </ThemedView>
 
-      <ThemedView style={styles.macrosContainer}>
-        <ThemedText style={styles.macrosTitle}>Macronutrients:</ThemedText>
-        
-        <ThemedView style={styles.macroItem}>
-          <ThemedView style={styles.macroHeader}>
-            <ThemedText style={styles.macroLabel}>Protein</ThemedText>
-            <ThemedText style={styles.macroValue}>{totalProtein}g</ThemedText>
-          </ThemedView>
+      <ThemedView style={styles.macrosGrid}>
+        <ThemedView style={styles.macroCard}>
+          <ThemedText style={styles.macroLabel}>Protein</ThemedText>
+          <ThemedText style={styles.macroAmount}>{totalProtein}g</ThemedText>
           <ThemedView style={styles.progressBar}>
             <ThemedView 
               style={[
@@ -72,11 +63,9 @@ export const NutritionInfoCard: React.FC<NutritionInfoCardProps> = ({
           </ThemedText>
         </ThemedView>
 
-        <ThemedView style={styles.macroItem}>
-          <ThemedView style={styles.macroHeader}>
-            <ThemedText style={styles.macroLabel}>Carbohydrates</ThemedText>
-            <ThemedText style={styles.macroValue}>{totalCarbs}g</ThemedText>
-          </ThemedView>
+        <ThemedView style={styles.macroCard}>
+          <ThemedText style={styles.macroLabel}>Carb.</ThemedText>
+          <ThemedText style={styles.macroAmount}>{totalCarbs}g</ThemedText>
           <ThemedView style={styles.progressBar}>
             <ThemedView 
               style={[
@@ -91,11 +80,9 @@ export const NutritionInfoCard: React.FC<NutritionInfoCardProps> = ({
           </ThemedText>
         </ThemedView>
 
-        <ThemedView style={styles.macroItem}>
-          <ThemedView style={styles.macroHeader}>
-            <ThemedText style={styles.macroLabel}>Fat</ThemedText>
-            <ThemedText style={styles.macroValue}>{totalFat}g</ThemedText>
-          </ThemedView>
+        <ThemedView style={styles.macroCard}>
+          <ThemedText style={styles.macroLabel}>Fat</ThemedText>
+          <ThemedText style={styles.macroAmount}>{totalFat}g</ThemedText>
           <ThemedView style={styles.progressBar}>
             <ThemedView 
               style={[
@@ -109,19 +96,6 @@ export const NutritionInfoCard: React.FC<NutritionInfoCardProps> = ({
             {getFatPercentage(nutrition.fat)}% of calories
           </ThemedText>
         </ThemedView>
-      </ThemedView>
-
-      <ThemedView style={styles.nutritionNotes}>
-        <ThemedText style={styles.notesTitle}>Nutrition Notes:</ThemedText>
-        <ThemedText style={styles.notesText}>
-          • Protein: {totalProtein}g ({getMacroPercentage(nutrition.protein)}% of calories)
-        </ThemedText>
-        <ThemedText style={styles.notesText}>
-          • Carbs: {totalCarbs}g ({getMacroPercentage(nutrition.carbs)}% of calories)
-        </ThemedText>
-        <ThemedText style={styles.notesText}>
-          • Fat: {totalFat}g ({getFatPercentage(nutrition.fat)}% of calories)
-        </ThemedText>
       </ThemedView>
     </ThemedView>
   );
@@ -142,72 +116,64 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
-    color: '#333',
-  },
-  caloriesContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
-  },
-  caloriesLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
-  },
-  caloriesValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FF6B35',
-  },
-  servingsText: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 4,
-  },
-  macrosContainer: {
-    marginBottom: 16,
-  },
-  macrosTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-    color: '#333',
-  },
-  macroItem: {
-    marginBottom: 16,
-  },
-  macroHeader: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 16,
   },
-  macroLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
-  },
-  macroValue: {
-    fontSize: 14,
+  title: {
+    fontSize: 18,
     fontWeight: '600',
     color: '#333',
   },
-  progressBar: {
-    height: 8,
-    backgroundColor: '#e9ecef',
-    borderRadius: 4,
+  caloriesBadge: {
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  caloriesText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'white',
+  },
+  macrosGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  macroCard: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  macroLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#666',
     marginBottom: 4,
+    textAlign: 'center',
+  },
+  macroAmount: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 8,
+  },
+  progressBar: {
+    width: '100%',
+    height: 6,
+    backgroundColor: '#e9ecef',
+    borderRadius: 3,
+    marginBottom: 6,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 3,
   },
   proteinFill: {
     backgroundColor: '#28a745',
@@ -219,25 +185,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#dc3545',
   },
   percentageText: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#666',
-    textAlign: 'right',
-  },
-  nutritionNotes: {
-    backgroundColor: '#f8f9fa',
-    padding: 12,
-    borderRadius: 8,
-  },
-  notesTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-    color: '#333',
-  },
-  notesText: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 4,
-    lineHeight: 16,
+    textAlign: 'center',
+    lineHeight: 12,
   },
 }); 
