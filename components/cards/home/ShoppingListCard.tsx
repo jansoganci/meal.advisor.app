@@ -14,35 +14,26 @@ export const ShoppingListCard: React.FC<ShoppingListCardProps> = ({
   shoppingList,
   onPress
 }) => {
-  if (!shoppingList) {
-    return (
-      <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.8}>
-        <ThemedView style={styles.content}>
-          <ThemedText style={styles.title}>Shopping List</ThemedText>
-          <ThemedText style={styles.subtitle}>No active list</ThemedText>
-          <ThemedText style={styles.actionText}>Create from weekly plan →</ThemedText>
-        </ThemedView>
-      </TouchableOpacity>
-    );
-  }
-
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.8}>
-      <ThemedView style={styles.content}>
-        <ThemedText style={styles.title}>Shopping List</ThemedText>
-        <ThemedText style={styles.subtitle}>{shoppingList.title}</ThemedText>
-        <ThemedText style={styles.actionText}>View list →</ThemedText>
-      </ThemedView>
-    </TouchableOpacity>
+    <ThemedView style={styles.container}>
+      <TouchableOpacity style={styles.button} onPress={onPress} activeOpacity={0.8}>
+        <ThemedText style={styles.buttonText}>Shopping List</ThemedText>
+      </TouchableOpacity>
+    </ThemedView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    paddingVertical: 20,
+    paddingHorizontal: 8,
+  },
+  button: {
+    backgroundColor: '#F0F0F0',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -52,24 +43,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  content: {
-    alignItems: 'center',
-  },
-  title: {
+  buttonText: {
     fontSize: 18,
     fontWeight: '600',
     color: '#333',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  actionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#FF6B35',
   },
 }); 

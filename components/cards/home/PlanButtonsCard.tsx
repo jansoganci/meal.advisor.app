@@ -1,18 +1,29 @@
-import { StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Alert, StyleSheet, TouchableOpacity } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
 export function PlanButtonsCard() {
+  const router = useRouter();
+
+  const handleWeeklyPlanPress = () => {
+    router.push('/(tabs)/weeklyplan');
+  };
+
+  const handleMonthlyPlanPress = () => {
+    Alert.alert('Coming soon!');
+  };
+
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.buttonsRow}>
-        <ThemedView style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={handleWeeklyPlanPress} activeOpacity={0.8}>
           <ThemedText style={styles.buttonText}>Weekly Plan</ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.button}>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handleMonthlyPlanPress} activeOpacity={0.8}>
           <ThemedText style={styles.buttonText}>Monthly Plan</ThemedText>
-        </ThemedView>
+        </TouchableOpacity>
       </ThemedView>
     </ThemedView>
   );
