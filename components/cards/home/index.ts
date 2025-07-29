@@ -7,6 +7,7 @@ export { GreetingCard } from './GreetingCard';
 export { PlanButtonsCard } from './PlanButtonsCard';
 export { ProteinCard } from './ProteinCard';
 export { QuickMealButton } from './QuickMealButton';
+export { ShoppingListCard } from './ShoppingListCard';
 export { StreakCard } from './StreakCard';
 export { WeekCalendarCard } from './WeekCalendarCard';
 
@@ -20,4 +21,5 @@ export { WeekCalendarCard } from './WeekCalendarCard';
 // - CarbsCard: Carbs remaining with icon
 // - FatCard: Fat remaining with icon
 // - QuickMealButton: Large button for getting quick meal suggestions
-// - PlanButtonsCard: Weekly and Monthly plan buttons side by side 
+// - PlanButtonsCard: Weekly and Monthly plan buttons side by side
+// - ShoppingListCard: Shopping list preview card for home screen 

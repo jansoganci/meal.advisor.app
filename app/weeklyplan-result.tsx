@@ -5,9 +5,9 @@ import { Alert, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import {
-  DayMealCard,
-  WeeklyActionsCard,
-  WeeklyOverviewCard
+    DayMealCard,
+    WeeklyActionsCard,
+    WeeklyOverviewCard
 } from '@/components/weeklyplan/result';
 import { useAuth } from '@/contexts/AuthContext';
 import { validateWeeklyPlanResponse } from '@/lib/validation';
@@ -176,6 +176,7 @@ export default function WeeklyPlanResultScreen() {
         <WeeklyActionsCard
           onRegenerate={handleRegenerate}
           loading={regenerating}
+          weeklyPlan={weeklyPlan}
         />
 
         <ThemedView style={styles.bottomPadding} />

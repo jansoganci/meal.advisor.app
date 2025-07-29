@@ -47,6 +47,8 @@ export default function RootLayout() {
               <Stack.Screen name="weeklyplan" options={{ headerShown: false }} />
               <Stack.Screen name="weeklyplan-result" options={{ headerShown: false }} />
               <Stack.Screen name="profile/edit" options={{ headerShown: false }} />
+              <Stack.Screen name="shopping-list" options={{ headerShown: false }} />
+
               <Stack.Screen name="favorite-recipe-detail" options={{ headerShown: false }} />
               <Stack.Screen name="+not-found" />
             </Stack>

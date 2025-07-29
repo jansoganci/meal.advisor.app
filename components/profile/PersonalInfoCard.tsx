@@ -1,10 +1,12 @@
-import { CheckboxList } from '@/components/onboarding/CheckboxList'
+import { InlineTagSelect } from '@/components/profile/InlineTagSelect'
 import { useAuth } from '@/contexts/AuthContext'
+import { useProfile } from '@/contexts/ProfileContext'
 import { supabase } from '@/lib/supabase'
 import { ALLERGY_OPTIONS, CUISINE_PREFERENCES_OPTIONS, DIETARY_PREFERENCES_OPTIONS } from '@/types/onboarding'
 import { Picker } from '@react-native-picker/picker'
+import * as Haptics from 'expo-haptics'
 import React, { useEffect, useState } from 'react'
-import { Alert, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 interface PersonalInfoCardProps {
   age?: number
@@ -19,19 +21,31 @@ interface PersonalInfoCardProps {
 }
 
 export const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
-  age = 28,
-  gender = 'male',
-  height_cm = 180,
-  weight_kg = 74,
-  primary_goal = 'lose_weight',
-  activity_level = 'moderately_active',
-  allergies = ['dairy', 'gluten'],
-  dietary_preferences = ['vegetarian'],
-  cuisine_preferences = ['italian', 'mediterranean']
+  age,
+  gender,
+  height_cm,
+  weight_kg,
+  primary_goal,
+  activity_level,
+  allergies,
+  dietary_preferences,
+  cuisine_preferences
 }) => {
   const { user } = useAuth()
+  const { profile, loading, error, refreshProfile } = useProfile()
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
+  
+  // Use real profile data with fallbacks to props, then defaults
+  const realAge = age ?? profile?.age ?? 28
+  const realGender = gender ?? profile?.gender ?? 'male'
+  const realHeight = height_cm ?? profile?.height_cm ?? 180
+  const realWeight = weight_kg ?? profile?.weight_kg ?? 74
+  const realGoal = primary_goal ?? profile?.primary_goal ?? 'lose_weight'
+  const realActivity = activity_level ?? profile?.activity_level ?? 'moderately_active'
+  const realAllergies = allergies ?? profile?.allergies ?? ['dairy', 'gluten']
+  const realDiet = dietary_preferences ?? profile?.dietary_preferences ?? ['vegetarian']
+  const realCuisine = cuisine_preferences ?? profile?.cuisine_preferences ?? ['italian', 'mediterranean']
   
   // Budget state
   const [budgetPerMeal, setBudgetPerMeal] = useState<number>(10.00)
@@ -39,28 +53,16 @@ export const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
   const [budgetModalVisible, setBudgetModalVisible] = useState(false)
   const [tempBudget, setTempBudget] = useState<number>(10.00)
   
-  // Display state (what user sees)
-  const [displayAge, setDisplayAge] = useState(age.toString())
-  const [displayGender, setDisplayGender] = useState(gender)
-  const [displayHeight, setDisplayHeight] = useState(height_cm.toString())
-  const [displayWeight, setDisplayWeight] = useState(weight_kg.toString())
-  const [displayGoal, setDisplayGoal] = useState(primary_goal)
-  const [displayActivity, setDisplayActivity] = useState(activity_level)
-  const [displayAllergies, setDisplayAllergies] = useState(allergies.join(', '))
-  const [displayDiet, setDisplayDiet] = useState(dietary_preferences.join(', '))
-  const [displayCuisine, setDisplayCuisine] = useState(cuisine_preferences.join(', '))
-  const [displayBudget, setDisplayBudget] = useState('$10.00')
-  
   // Input state for edit mode
-  const [ageInput, setAgeInput] = useState(age)
-  const [genderInput, setGenderInput] = useState(gender)
-  const [heightInput, setHeightInput] = useState(height_cm)
-  const [weightInput, setWeightInput] = useState(weight_kg)
-  const [goalInput, setGoalInput] = useState(primary_goal)
-  const [activityInput, setActivityInput] = useState(activity_level)
-  const [allergiesInput, setAllergiesInput] = useState(allergies)
-  const [dietInput, setDietInput] = useState(dietary_preferences)
-  const [cuisineInput, setCuisineInput] = useState(cuisine_preferences)
+  const [ageInput, setAgeInput] = useState(realAge)
+  const [genderInput, setGenderInput] = useState(realGender)
+  const [heightInput, setHeightInput] = useState(realHeight)
+  const [weightInput, setWeightInput] = useState(realWeight)
+  const [goalInput, setGoalInput] = useState(realGoal)
+  const [activityInput, setActivityInput] = useState(realActivity)
+  const [allergiesInput, setAllergiesInput] = useState(realAllergies)
+  const [dietInput, setDietInput] = useState(realDiet)
+  const [cuisineInput, setCuisineInput] = useState(realCuisine)
 
   // Modal states for pickers
   const [ageModalVisible, setAgeModalVisible] = useState(false)
@@ -71,12 +73,12 @@ export const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
   const [activityModalVisible, setActivityModalVisible] = useState(false)
 
   // Temporary values for pickers
-  const [tempAge, setTempAge] = useState(age)
-  const [tempGender, setTempGender] = useState(gender)
-  const [tempHeight, setTempHeight] = useState(height_cm)
-  const [tempWeight, setTempWeight] = useState(weight_kg)
-  const [tempGoal, setTempGoal] = useState(primary_goal)
-  const [tempActivity, setTempActivity] = useState(activity_level)
+  const [tempAge, setTempAge] = useState(realAge)
+  const [tempGender, setTempGender] = useState(realGender)
+  const [tempHeight, setTempHeight] = useState(realHeight)
+  const [tempWeight, setTempWeight] = useState(realWeight)
+  const [tempGoal, setTempGoal] = useState(realGoal)
+  const [tempActivity, setTempActivity] = useState(realActivity)
 
   // Generate ranges for number pickers
   const ages = Array.from({ length: 82 }, (_, i) => i + 18) // 18-99
@@ -123,6 +125,22 @@ export const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
     { value: 'extremely_active', label: 'Extremely Active' },
   ]
 
+  // Update input values when profile data loads
+  useEffect(() => {
+    if (profile && !loading) {
+      // Update input states
+      setAgeInput(profile.age)
+      setGenderInput(profile.gender)
+      setHeightInput(profile.height_cm)
+      setWeightInput(profile.weight_kg)
+      setGoalInput(profile.primary_goal)
+      setActivityInput(profile.activity_level)
+      setAllergiesInput(profile.allergies || [])
+      setDietInput(profile.dietary_preferences || [])
+      setCuisineInput(profile.cuisine_preferences || [])
+    }
+  }, [profile, loading])
+
   // Fetch budget_per_meal from user_preferences table on component mount
   useEffect(() => {
     const fetchBudget = async () => {
@@ -144,7 +162,6 @@ export const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
           const budget = parseFloat(data.budget_per_meal)
           setBudgetPerMeal(budget)
           setBudgetInput(budget)
-          setDisplayBudget(`$${budget.toFixed(2)}`)
         }
       } catch (error) {
         console.error('Error fetching budget:', error)
@@ -154,7 +171,37 @@ export const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
     fetchBudget()
   }, [user])
 
+  // Show loading state
+  if (loading) {
+    return (
+      <View style={styles.card}>
+        <Text style={styles.title}>Personal Info</Text>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>Loading profile data...</Text>
+        </View>
+      </View>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <View style={styles.card}>
+        <Text style={styles.title}>Personal Info</Text>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>⚠️ Error loading profile</Text>
+          <Text style={styles.errorMessage}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={() => refreshProfile()}>
+            <Text style={styles.retryText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    )
+  }
+
   const handleEditPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     setEditing(true)
   }
 
@@ -282,22 +329,30 @@ export const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
       }
 
       // Update displayed values with input values
-      setDisplayAge(ageInput.toString())
-      setDisplayGender(genderInput)
-      setDisplayHeight(heightInput.toString())
-      setDisplayWeight(weightInput.toString())
-      setDisplayGoal(goalInput)
-      setDisplayActivity(activityInput)
-      setDisplayAllergies(allergiesInput.join(', '))
-      setDisplayDiet(dietInput.join(', '))
-      setDisplayCuisine(cuisineInput.join(', '))
-      setDisplayBudget(`$${budgetInput.toFixed(2)}`)
+      setAgeInput(ageInput)
+      setGenderInput(genderInput)
+      setHeightInput(heightInput)
+      setWeightInput(weightInput)
+      setGoalInput(goalInput)
+      setActivityInput(activityInput)
+      setAllergiesInput(allergiesInput)
+      setDietInput(dietInput)
+      setCuisineInput(cuisineInput)
       setBudgetPerMeal(budgetInput)
       setEditing(false)
       
-      Alert.alert('Success', 'Profile updated successfully!')
+      // Success haptic feedback
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      
+      Alert.alert('Success', 'Profile updated successfully!', [
+        { text: 'OK', onPress: () => {
+          // Refresh profile data to ensure consistency
+          refreshProfile()
+        }}
+      ])
     } catch (error) {
       console.error('Error updating profile:', error)
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
       Alert.alert('Error', 'Failed to update profile. Please try again.')
     } finally {
       setSaving(false)
@@ -305,16 +360,17 @@ export const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
   }
 
   const handleCancelPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     // Reset inputs to current displayed values
-    setAgeInput(age)
-    setGenderInput(gender)
-    setHeightInput(height_cm)
-    setWeightInput(weight_kg)
-    setGoalInput(primary_goal)
-    setActivityInput(activity_level)
-    setAllergiesInput(allergies)
-    setDietInput(dietary_preferences)
-    setCuisineInput(cuisine_preferences)
+    setAgeInput(realAge)
+    setGenderInput(realGender)
+    setHeightInput(realHeight)
+    setWeightInput(realWeight)
+    setGoalInput(realGoal)
+    setActivityInput(realActivity)
+    setAllergiesInput(realAllergies)
+    setDietInput(realDiet)
+    setCuisineInput(realCuisine)
     setBudgetInput(budgetPerMeal)
     setEditing(false)
   }
@@ -494,12 +550,10 @@ export const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
       <Text style={styles.label}>{label}:</Text>
       {editing ? (
         <View style={styles.multiSelectContainer}>
-          <CheckboxList
-            title=""
+          <InlineTagSelect
             options={options}
             selectedOptions={selectedOptions}
             onOptionToggle={onOptionToggle}
-            multiSelect={true}
           />
         </View>
       ) : (
@@ -718,7 +772,7 @@ const styles = StyleSheet.create({
   },
   multiSelectContainer: {
     flex: 1,
-    marginLeft: 8,
+    marginLeft: 4, // Reduced from 8
   },
   modalOverlay: {
     flex: 1,
@@ -799,5 +853,43 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     backgroundColor: '#C7C7CC',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666666',
+  },
+  errorContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FF3B30',
+    marginBottom: 5,
+  },
+  errorMessage: {
+    fontSize: 14,
+    color: '#666666',
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 15,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    backgroundColor: '#007AFF',
+    borderRadius: 8,
+  },
+  retryText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 }) 

@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Alert, StyleSheet, TouchableOpacity } from 'react-native';
 
@@ -7,14 +8,25 @@ import { ThemedView } from '@/components/ThemedView';
 interface WeeklyActionsCardProps {
   onRegenerate: () => void;
   loading?: boolean;
+  weeklyPlan?: any; // Add weekly plan prop
 }
 
 export const WeeklyActionsCard: React.FC<WeeklyActionsCardProps> = ({
   onRegenerate,
-  loading = false
+  loading = false,
+  weeklyPlan
 }) => {
+  const router = useRouter();
+
   const handleShoppingListPress = () => {
-    Alert.alert('Shopping List', 'Coming soon');
+    if (weeklyPlan) {
+      router.push({
+        pathname: '/shopping-list',
+        params: { weeklyPlan: JSON.stringify(weeklyPlan) }
+      });
+    } else {
+      Alert.alert('Shopping List', 'Weekly plan data not available');
+    }
   };
 
   const handleRegeneratePress = () => {

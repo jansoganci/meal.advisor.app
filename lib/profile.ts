@@ -1,6 +1,5 @@
 import { OnboardingData, UserProfile } from '@/types/profile'
 import { supabase } from './supabase'
-import { SanitizationService, ValidationService } from './validation'
 
 export interface ProfileResult {
   success: boolean
@@ -72,42 +71,40 @@ export class ProfileService {
         return { success: false, error: `Missing required data: ${missing.join(', ')}` }
       }
 
-      // Sanitize input data
-      console.log('🧹 Sanitizing onboarding data...')
-      const sanitizedData = SanitizationService.sanitizeOnboardingData(data)
-      console.log('🧹 Sanitized data:', sanitizedData)
-
-      // Validate input data
-      const validation = ValidationService.validateOnboardingData(sanitizedData)
-      console.log('✅ Validation result:', validation)
-      if (!validation.isValid) {
-        console.error('❌ Validation failed:', validation.errors)
-        return { success: false, error: validation.errors.join(', ') }
+      // Basic validation
+      const validationErrors = []
+      if (data.age < 13 || data.age > 120) validationErrors.push('Age must be between 13 and 120')
+      if (data.height_cm < 100 || data.height_cm > 250) validationErrors.push('Height must be between 100 and 250 cm')
+      if (data.weight_kg < 30 || data.weight_kg > 300) validationErrors.push('Weight must be between 30 and 300 kg')
+      
+      if (validationErrors.length > 0) {
+        console.error('❌ Validation failed:', validationErrors)
+        return { success: false, error: validationErrors.join(', ') }
       }
 
       // Calculate nutrition goals
       const nutritionGoals = await this.calculateNutritionGoals(
-        sanitizedData.age,
-        sanitizedData.gender,
-        sanitizedData.height_cm,
-        sanitizedData.weight_kg,
-        sanitizedData.activity_level,
-        sanitizedData.primary_goal
+        data.age,
+        data.gender,
+        data.height_cm,
+        data.weight_kg,
+        data.activity_level,
+        data.primary_goal
       )
 
       // Update the existing user record created by the auth trigger
       const profileData = {
-        age: sanitizedData.age,
-        gender: sanitizedData.gender,
-        height_cm: sanitizedData.height_cm,
-        weight_kg: sanitizedData.weight_kg,
-        allergies: sanitizedData.allergies || [],
-        chronic_illnesses: sanitizedData.chronic_illnesses || [],
-        activity_level: sanitizedData.activity_level,
-        primary_goal: sanitizedData.primary_goal,
-        dietary_preferences: sanitizedData.dietary_preferences || [],
-        cuisine_preferences: sanitizedData.cuisine_preferences || [],
-        preferred_language: sanitizedData.preferred_language || 'en',
+        age: data.age,
+        gender: data.gender,
+        height_cm: data.height_cm,
+        weight_kg: data.weight_kg,
+        allergies: data.allergies || [],
+        chronic_illnesses: data.chronic_illnesses || [],
+        activity_level: data.activity_level,
+        primary_goal: data.primary_goal,
+        dietary_preferences: data.dietary_preferences || [],
+        cuisine_preferences: data.cuisine_preferences || [],
+        preferred_language: data.preferred_language || 'en',
         daily_calories: nutritionGoals.daily_calories,
         daily_protein_g: nutritionGoals.daily_protein,
         onboarding_completed: true,
@@ -119,11 +116,11 @@ export class ProfileService {
       // Validate against database constraints
       console.log('🔍 Validating data against database constraints...')
       const constraintValidation = {
-        age: sanitizedData.age >= 13 && sanitizedData.age <= 120,
-        height_cm: sanitizedData.height_cm >= 100 && sanitizedData.height_cm <= 250,
-        weight_kg: sanitizedData.weight_kg >= 30 && sanitizedData.weight_kg <= 300,
-        activity_level: ['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active'].includes(sanitizedData.activity_level),
-        primary_goal: ['lose_weight', 'maintain_weight', 'gain_weight', 'build_muscle', 'improve_health'].includes(sanitizedData.primary_goal),
+        age: data.age >= 13 && data.age <= 120,
+        height_cm: data.height_cm >= 100 && data.height_cm <= 250,
+        weight_kg: data.weight_kg >= 30 && data.weight_kg <= 300,
+        activity_level: ['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active'].includes(data.activity_level),
+        primary_goal: ['lose_weight', 'maintain_weight', 'gain_weight', 'build_muscle', 'improve_health'].includes(data.primary_goal),
         daily_calories: nutritionGoals.daily_calories >= 1000 && nutritionGoals.daily_calories <= 4000,
         daily_protein: nutritionGoals.daily_protein >= 20 && nutritionGoals.daily_protein <= 300
       }
@@ -232,18 +229,25 @@ export class ProfileService {
   // Update user profile
   static async updateProfile(userId: string, updates: Partial<UserProfile>): Promise<ProfileResult> {
     try {
-      // Sanitize input data
-      const sanitizedUpdates = SanitizationService.sanitizeProfileUpdate(updates)
-
-      // Validate input data
-      const validation = ValidationService.validateProfileUpdate(sanitizedUpdates)
-      if (!validation.isValid) {
-        return { success: false, error: validation.errors.join(', ') }
+      // Basic validation
+      const validationErrors = []
+      if (updates.age && (updates.age < 13 || updates.age > 120)) {
+        validationErrors.push('Age must be between 13 and 120')
+      }
+      if (updates.height_cm && (updates.height_cm < 100 || updates.height_cm > 250)) {
+        validationErrors.push('Height must be between 100 and 250 cm')
+      }
+      if (updates.weight_kg && (updates.weight_kg < 30 || updates.weight_kg > 300)) {
+        validationErrors.push('Weight must be between 30 and 300 kg')
+      }
+      
+      if (validationErrors.length > 0) {
+        return { success: false, error: validationErrors.join(', ') }
       }
 
       // If physical measurements or activity/goals are updated, recalculate nutrition goals
-      if (sanitizedUpdates.age || sanitizedUpdates.gender || sanitizedUpdates.height_cm || 
-          sanitizedUpdates.weight_kg || sanitizedUpdates.activity_level || sanitizedUpdates.primary_goal) {
+      if (updates.age || updates.gender || updates.height_cm || 
+          updates.weight_kg || updates.activity_level || updates.primary_goal) {
         
         // Get current profile to fill in missing values
         const currentProfile = await this.getProfile(userId)
@@ -253,22 +257,22 @@ export class ProfileService {
 
         const profile = currentProfile.data
         const nutritionGoals = await this.calculateNutritionGoals(
-          sanitizedUpdates.age ?? profile.age,
-          sanitizedUpdates.gender ?? profile.gender,
-          sanitizedUpdates.height_cm ?? profile.height_cm,
-          sanitizedUpdates.weight_kg ?? profile.weight_kg,
-          sanitizedUpdates.activity_level ?? profile.activity_level,
-          sanitizedUpdates.primary_goal ?? profile.primary_goal
+          updates.age ?? profile.age,
+          updates.gender ?? profile.gender,
+          updates.height_cm ?? profile.height_cm,
+          updates.weight_kg ?? profile.weight_kg,
+          updates.activity_level ?? profile.activity_level,
+          updates.primary_goal ?? profile.primary_goal
         )
 
-        sanitizedUpdates.daily_calories = nutritionGoals.daily_calories
-        sanitizedUpdates.daily_protein_g = nutritionGoals.daily_protein
+        updates.daily_calories = nutritionGoals.daily_calories
+        updates.daily_protein_g = nutritionGoals.daily_protein
       }
 
       const { data: profile, error } = await supabase
         .from('users')
         .update({
-          ...sanitizedUpdates,
+          ...updates,
           updated_at: new Date().toISOString(),
         })
         .eq('id', userId)

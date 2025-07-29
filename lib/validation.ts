@@ -22,7 +22,7 @@ export const VALID_BUDGETS = ['$', '$$', '$$$', 'Any'];
 // Weekly Plan validation constants
 export const VALID_GOALS = ['Lose Weight', 'Gain Muscle', 'Maintain', 'Build Strength'];
 export const VALID_MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
-export const VALID_WEEKLY_CUISINES = ['Mediterranean', 'Asian', 'Italian', 'Mexican'];
+export const VALID_WEEKLY_CUISINES = ['Italian', 'Mexican', 'Asian', 'Mediterranean', 'American', 'Indian', 'French', 'Thai', 'Greek', 'Chinese', 'Japanese', 'Korean'];
 export const VALID_PLAN_FOCUS = ['Quick & Easy', 'Try New Recipes', 'Healthy Focus', 'Comfort Foods'];
 
 // Sanitization functions

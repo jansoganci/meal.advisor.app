@@ -1,6 +1,11 @@
 export interface UserProfile {
   id: string
   
+  // User Identity
+  email: string
+  full_name?: string
+  avatar_url?: string
+  
   // Basic Information
   age: number
   gender: 'male' | 'female' | 'other' | 'prefer_not_to_say'
@@ -20,11 +25,13 @@ export interface UserProfile {
   // Preferences
   dietary_preferences: string[]
   cuisine_preferences: string[]
+  disliked_foods?: string[]
   
   // App Settings
   preferred_language: string
   notifications_enabled: boolean
   onboarding_completed: boolean
+  timezone?: string
   
   // Calculated Fields
   daily_calories?: number
