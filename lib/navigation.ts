@@ -45,6 +45,14 @@ export class NavigationService {
     router.push(`/recipe/${recipeId}`);
   }
 
+  // Navigate to favorite recipe details
+  static goToFavoriteRecipeDetail(recipe: any) {
+    router.push({
+      pathname: '/favorite-recipe-detail',
+      params: { recipeData: JSON.stringify(recipe) }
+    });
+  }
+
   // Navigate to meal planning
   static goToMealPlanning() {
     router.push('/planning');
@@ -124,6 +132,7 @@ export const Routes = {
   
   // Recipe routes
   RECIPE_DETAIL: '/recipe',
+  FAVORITE_RECIPE_DETAIL: '/favorite-recipe-detail',
   
   // Planning routes
   MEAL_PLANNING: '/planning',

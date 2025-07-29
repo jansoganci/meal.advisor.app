@@ -17,7 +17,20 @@ export function CuisineCard({
   error
 }: CuisineCardProps) {
   const currentValue = value ?? defaultValue;
-  const options = ['Mediterranean', 'Asian', 'Italian', 'Mexican'];
+  const options = [
+    'Italian',
+    'Mexican',
+    'Asian',
+    'Mediterranean',
+    'American',
+    'Indian',
+    'French',
+    'Thai',
+    'Greek',
+    'Chinese',
+    'Japanese',
+    'Korean'
+  ];
 
   const handleSelection = (selectedValue: string) => {
     if (!onChange) return;
@@ -59,20 +72,24 @@ export function CuisineCard({
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: '#fff',
     paddingVertical: 20,
     paddingHorizontal: 16,
     borderRadius: 12,
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   title: {
     fontSize: 16,
     fontWeight: '500',
     marginBottom: 16,
-  },
-  optionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
   },
   optionsGrid: {
     flexDirection: 'row',
@@ -100,6 +117,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#333',
+    textAlign: 'center',
   },
   selectedText: {
     color: 'white',

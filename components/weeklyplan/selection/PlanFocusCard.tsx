@@ -26,7 +26,7 @@ export function PlanFocusCard({
   return (
     <ThemedView style={styles.container}>
       <ThemedText style={styles.title}>📅 Plan Focus</ThemedText>
-      <ThemedView style={styles.optionsGrid}>
+      <ThemedView style={styles.optionsRow}>
         {options.map((option) => (
           <TouchableOpacity
             key={option}
@@ -51,10 +51,19 @@ export function PlanFocusCard({
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: '#fff',
     paddingVertical: 20,
     paddingHorizontal: 16,
     borderRadius: 12,
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   title: {
     fontSize: 16,
@@ -66,23 +75,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 8,
   },
-  optionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
   optionButton: {
+    flex: 1,
     backgroundColor: '#F0F0F0',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
     alignItems: 'center',
-    justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    minWidth: '30%',
-    minHeight: 44,
-    flex: 1,
   },
   selectedButton: {
     backgroundColor: '#FF6B35',
@@ -92,6 +93,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#333',
+    textAlign: 'center',
   },
   selectedText: {
     color: 'white',

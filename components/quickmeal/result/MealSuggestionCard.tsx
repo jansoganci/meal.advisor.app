@@ -8,11 +8,17 @@ import type { QuickMealSuggestion } from '@/lib/ai/types';
 interface MealSuggestionCardProps {
   suggestion: QuickMealSuggestion;
   onPress?: () => void;
+  onToggleFavorite?: (suggestion: QuickMealSuggestion) => void;
+  isFavorited?: boolean;
+  isToggling?: boolean;
 }
 
 export const MealSuggestionCard: React.FC<MealSuggestionCardProps> = ({
   suggestion,
-  onPress
+  onPress,
+  onToggleFavorite,
+  isFavorited = false,
+  isToggling = false
 }) => {
   const formatCalories = (calories: number) => {
     return `${calories} cal`;
@@ -40,8 +46,14 @@ export const MealSuggestionCard: React.FC<MealSuggestionCardProps> = ({
       <ThemedView style={styles.header}>
         <ThemedView style={styles.titleContainer}>
           <ThemedText style={styles.title}>{suggestion.title}</ThemedText>
-          <TouchableOpacity style={styles.favoriteButton}>
-            <ThemedText style={styles.favoriteIcon}>🤍</ThemedText>
+          <TouchableOpacity 
+            style={[styles.favoriteButton, isToggling && styles.favoriteButtonDisabled]}
+            onPress={() => onToggleFavorite?.(suggestion)}
+            disabled={isToggling}
+          >
+            <ThemedText style={styles.favoriteIcon}>
+              {isFavorited ? '❤️' : '🤍'}
+            </ThemedText>
           </TouchableOpacity>
         </ThemedView>
         
@@ -175,5 +187,8 @@ const styles = StyleSheet.create({
   },
   favoriteIcon: {
     fontSize: 20,
+  },
+  favoriteButtonDisabled: {
+    opacity: 0.5,
   },
 }); 

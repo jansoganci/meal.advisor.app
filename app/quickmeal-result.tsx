@@ -5,11 +5,13 @@ import { Alert, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import {
-  InstructionsCard,
-  MealSuggestionCard,
-  NutritionInfoCard
+    InstructionsCard,
+    MealSuggestionCard,
+    NutritionInfoCard
 } from '@/components/quickmeal';
+import { useAuth } from '@/contexts/AuthContext';
 import type { QuickMealSuggestion } from '@/lib/ai/types';
+import { favoritesService } from '@/lib/favorites';
 import { validateQuickMealResponse } from '@/lib/validation';
 
 // Helper function to convert string ingredients to Ingredient objects
@@ -25,6 +27,7 @@ const convertStringIngredientsToObjects = (ingredients: string[]) => {
 export default function QuickMealResultScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { user } = useAuth();
   
   const [suggestions, setSuggestions] = useState<QuickMealSuggestion[]>([]);
   const [mealPrepIdeas, setMealPrepIdeas] = useState<string[]>([]);
@@ -32,6 +35,10 @@ export default function QuickMealResultScreen() {
   const [budgetTips, setBudgetTips] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Favorites state
+  const [favoritedRecipes, setFavoritedRecipes] = useState<Set<string>>(new Set());
+  const [togglingFavorites, setTogglingFavorites] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     try {
@@ -91,6 +98,51 @@ export default function QuickMealResultScreen() {
     // Handle meal selection - could navigate to detailed view or trigger favoriting
   };
 
+  // Handle favorite toggle
+  const handleToggleFavorite = async (suggestion: QuickMealSuggestion) => {
+    if (!user) {
+      Alert.alert('Sign In Required', 'Please sign in to save favorites');
+      return;
+    }
+
+    const recipeKey = generateRecipeKey(suggestion);
+    const isFavorited = favoritedRecipes.has(recipeKey);
+    
+    // Optimistic update
+    setTogglingFavorites(prev => new Set([...prev, recipeKey]));
+    
+    try {
+      if (isFavorited) {
+        // Remove from favorites - we need to find the recipe ID first
+        // For MVP, we'll just show an alert since we don't store recipe IDs locally
+        Alert.alert('Remove Favorite', 'Go to the Favorites tab to remove this recipe');
+      } else {
+        // Add to favorites
+        const result = await favoritesService.addToFavorites(user.id, suggestion);
+        if (result.success) {
+          setFavoritedRecipes(prev => new Set([...prev, recipeKey]));
+          Alert.alert('Success', 'Recipe added to favorites!');
+        } else {
+          Alert.alert('Error', result.error || 'Failed to add to favorites');
+        }
+      }
+    } catch (err) {
+      console.error('Error toggling favorite:', err);
+      Alert.alert('Error', 'An unexpected error occurred');
+    } finally {
+      setTogglingFavorites(prev => {
+        const updated = new Set(prev);
+        updated.delete(recipeKey);
+        return updated;
+      });
+    }
+  };
+
+  // Generate a unique key for a recipe suggestion
+  const generateRecipeKey = (suggestion: QuickMealSuggestion): string => {
+    return `${suggestion.title}-${suggestion.calories}-${suggestion.ingredients.slice(0, 3).join(',')}`;
+  };
+
   if (loading) {
     return (
       <ThemedView style={styles.container}>
@@ -139,12 +191,17 @@ export default function QuickMealResultScreen() {
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Meal Suggestions */}
-        {suggestions.map((suggestion, index) => (
-          <ThemedView key={index} style={styles.suggestionContainer}>
-            <MealSuggestionCard
-              suggestion={suggestion}
-              onPress={() => handleMealPress()}
-            />
+        {suggestions.map((suggestion, index) => {
+          const recipeKey = generateRecipeKey(suggestion);
+          return (
+            <ThemedView key={index} style={styles.suggestionContainer}>
+              <MealSuggestionCard
+                suggestion={suggestion}
+                onPress={() => handleMealPress()}
+                onToggleFavorite={handleToggleFavorite}
+                isFavorited={favoritedRecipes.has(recipeKey)}
+                isToggling={togglingFavorites.has(recipeKey)}
+              />
             
             <NutritionInfoCard
               nutrition={suggestion.nutrition}
@@ -159,7 +216,8 @@ export default function QuickMealResultScreen() {
               title={`${suggestion.title} - Instructions`}
             />
           </ThemedView>
-        ))}
+          );
+        })}
 
         {/* Additional Tips Section */}
         {(mealPrepIdeas.length > 0 || timeSavingTips.length > 0 || budgetTips.length > 0) && (

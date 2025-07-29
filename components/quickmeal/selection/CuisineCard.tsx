@@ -18,7 +18,6 @@ export function CuisineCard({
 }: CuisineCardProps) {
   const currentValue = value ?? defaultValue;
   const options = [
-    'Any',
     'Italian',
     'Mexican',
     'Asian',

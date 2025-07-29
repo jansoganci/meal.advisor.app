@@ -116,22 +116,27 @@ export default function WeeklyPlanResultScreen() {
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
             <ThemedText style={styles.backButtonText}>← Back</ThemedText>
           </TouchableOpacity>
-          <ThemedText style={styles.title}>Loading Plan...</ThemedText>
+          <ThemedText style={styles.title}>Your Weekly Plan</ThemedText>
+        </ThemedView>
+        <ThemedView style={styles.loadingContainer}>
+          <ThemedText style={styles.loadingText}>Loading your weekly plan...</ThemedText>
         </ThemedView>
       </ThemedView>
     );
   }
 
-  if (error || !weeklyPlan) {
+    if (error || !weeklyPlan) {
     return (
       <ThemedView style={styles.container}>
         <ThemedView style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
             <ThemedText style={styles.backButtonText}>← Back</ThemedText>
           </TouchableOpacity>
-          <ThemedText style={styles.title}>Error</ThemedText>
+          <ThemedText style={styles.title}>Your Weekly Plan</ThemedText>
         </ThemedView>
         <ThemedView style={styles.errorContainer}>
+          <ThemedText style={styles.errorIcon}>⚠️</ThemedText>
+          <ThemedText style={styles.errorTitle}>Unable to Load Plan</ThemedText>
           <ThemedText style={styles.errorText}>
             {error || 'No plan data available'}
           </ThemedText>
@@ -182,52 +187,77 @@ export default function WeeklyPlanResultScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
+    paddingTop: 47,
   },
   header: {
-    paddingTop: 60,
-    paddingHorizontal: 16,
-    paddingBottom: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    alignItems: 'center',
   },
   backButton: {
-    marginBottom: 16,
+    position: 'absolute',
+    left: 0,
+    top: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   backButtonText: {
     fontSize: 16,
+    fontWeight: '500',
     color: '#FF6B35',
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '600',
+    marginBottom: 8,
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: 16,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 32,
+    padding: 20,
+  },
+  errorIcon: {
+    fontSize: 50,
+    marginBottom: 15,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 10,
+    textAlign: 'center',
   },
   errorText: {
     fontSize: 16,
-    color: '#CC0000',
+    color: '#666',
+    marginBottom: 20,
     textAlign: 'center',
-    marginBottom: 24,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
   },
   retryButton: {
     backgroundColor: '#FF6B35',
     paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    paddingHorizontal: 30,
+    borderRadius: 10,
   },
   retryButtonText: {
-    color: 'white',
     fontSize: 16,
     fontWeight: '600',
+    color: 'white',
   },
   bottomPadding: {
-    height: 20,
+    height: 100,
   },
 }); 

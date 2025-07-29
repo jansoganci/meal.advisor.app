@@ -80,17 +80,26 @@ export const DayMealCard: React.FC<DayMealCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
+    backgroundColor: '#fff',
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   header: {
     marginBottom: 12,
   },
   dayName: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '600',
     color: '#333',
     letterSpacing: 0.5,
   },
@@ -101,10 +110,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    borderRadius: 6,
-    marginBottom: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    marginBottom: 6,
+    backgroundColor: '#f8f9fa',
   },
   mealInfo: {
     flexDirection: 'row',
@@ -112,13 +122,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mealIcon: {
-    fontSize: 16,
-    marginRight: 8,
+    fontSize: 18,
+    marginRight: 10,
   },
   mealName: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#333',
     flex: 1,
+    fontWeight: '500',
   },
   mealCalories: {
     fontSize: 14,
@@ -128,11 +139,11 @@ const styles = StyleSheet.create({
   totalContainer: {
     borderTopWidth: 1,
     borderTopColor: '#E0E0E0',
-    paddingTop: 8,
+    paddingTop: 12,
     alignItems: 'flex-end',
   },
   totalText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: '#FF6B35',
   },

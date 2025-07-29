@@ -5,18 +5,18 @@ import { Alert, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import {
-  CuisineCard,
-  GoalsCard,
-  MealsCard,
-  NutritionCard,
-  PlanFocusCard
+    CuisineCard,
+    GoalsCard,
+    MealsCard,
+    NutritionCard,
+    PlanFocusCard
 } from '@/components/weeklyplan/selection';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { edgeAIService } from '@/lib/ai/edge-service';
 import {
-  type ValidationError,
-  validateWeeklyPlanPreferences
+    type ValidationError,
+    validateWeeklyPlanPreferences
 } from '@/lib/validation';
 
 interface WeeklyPlanPreferences {
@@ -252,40 +252,47 @@ export default function WeeklyPlanScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
+    paddingTop: 47,
   },
   header: {
-    paddingTop: 60,
-    paddingHorizontal: 16,
-    paddingBottom: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    alignItems: 'center',
   },
   backButton: {
-    marginBottom: 16,
+    position: 'absolute',
+    left: 0,
+    top: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   backButtonText: {
     fontSize: 16,
+    fontWeight: '500',
     color: '#FF6B35',
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    opacity: 0.7,
+    fontWeight: '500',
+    color: '#666',
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: 16,
   },
   ctaContainer: {
-    marginTop: 20,
-    marginBottom: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 8,
   },
   ctaButton: {
     backgroundColor: '#FF6B35',
     paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingHorizontal: 32,
     borderRadius: 12,
     alignItems: 'center',
     shadowColor: '#000',
@@ -294,8 +301,8 @@ const styles = StyleSheet.create({
       height: 2,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowRadius: 4,
+    elevation: 3,
   },
   ctaButtonDisabled: {
     backgroundColor: '#ccc',
@@ -311,44 +318,41 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   errorContainer: {
-    marginTop: 16,
-    padding: 16,
-    backgroundColor: '#FFE6E6',
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#FF4444',
+    marginTop: 15,
   },
   errorText: {
-    color: '#CC0000',
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 10,
     fontSize: 14,
-    marginBottom: 12,
   },
   upgradeButton: {
     backgroundColor: '#FF6B35',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
   },
   upgradeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
     color: 'white',
-    fontSize: 14,
-    fontWeight: '500',
   },
   retryButton: {
-    backgroundColor: '#FF4444',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
+    backgroundColor: '#FF6B35',
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
   },
   retryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
     color: 'white',
-    fontSize: 14,
-    fontWeight: '500',
   },
   bottomPadding: {
-    height: 20,
+    height: 100,
   },
 }); 
