@@ -1,3 +1,4 @@
+import { DailyNutritionService, type DailyNutrition } from '@/lib/daily-nutrition'
 import { ProfileService } from '@/lib/profile'
 import { OnboardingData, ProfileContextType, UserProfile } from '@/types/profile'
 import React, { createContext, useContext, useEffect, useState } from 'react'
@@ -20,6 +21,7 @@ interface ProfileProviderProps {
 export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) => {
   const { user } = useAuth()
   const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [dailyNutrition, setDailyNutrition] = useState<DailyNutrition | null>(null)
   const [loading, setLoading] = useState(true) // Start with true to prevent premature routing
   const [error, setError] = useState<string | null>(null)
 
@@ -120,12 +122,20 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
       if (result.success && result.data) {
         console.log('✅ Profile loaded successfully:', result.data.onboarding_completed ? 'onboarding complete' : 'onboarding incomplete')
         setProfile(result.data)
+        
+        // Load daily nutrition after profile is loaded
+        await refreshDailyNutrition()
+        
         setLoading(false)
         return true
       } else {
         // Profile doesn't exist yet - this is normal for new users
         console.log('⚠️ No profile found for user (normal for new users)')
         setProfile(null)
+        
+        // Still load default daily nutrition
+        await refreshDailyNutrition()
+        
         setLoading(false)
         return false
       }
@@ -137,6 +147,29 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
     }
   }
 
+  const refreshDailyNutrition = async (): Promise<void> => {
+    if (!user) {
+      console.log('❌ No user, cannot refresh daily nutrition')
+      return
+    }
+
+    try {
+      console.log('🍽️ Refreshing daily nutrition for user:', user.id)
+      const result = await DailyNutritionService.getDailyNutrition(user.id)
+      
+      if (result.success && result.data) {
+        console.log('✅ Daily nutrition loaded successfully')
+        setDailyNutrition(result.data)
+      } else {
+        console.log('⚠️ Using default nutrition values:', result.error)
+        setDailyNutrition(DailyNutritionService.getDefaultNutrition())
+      }
+    } catch (err) {
+      console.error('❌ Error loading daily nutrition:', err)
+      setDailyNutrition(DailyNutritionService.getDefaultNutrition())
+    }
+  }
+
   const clearError = () => {
     setError(null)
   }
@@ -145,9 +178,11 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
     profile,
     loading,
     error,
+    dailyNutrition,
     createProfile,
     updateProfile,
     refreshProfile,
+    refreshDailyNutrition,
     clearError,
   }
 

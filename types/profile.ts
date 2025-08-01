@@ -64,6 +64,8 @@ export interface OnboardingStep4 {
   primary_goal: 'lose_weight' | 'maintain_weight' | 'gain_weight' | 'build_muscle' | 'improve_health'
 }
 
+import type { DailyNutrition } from '../lib/daily-nutrition'
+
 export interface OnboardingData extends OnboardingStep1, OnboardingStep2, OnboardingStep3, OnboardingStep4 {
   preferred_language?: string
   dietary_preferences?: string[]
@@ -72,10 +74,12 @@ export interface OnboardingData extends OnboardingStep1, OnboardingStep2, Onboar
 
 export interface ProfileContextType {
   profile: UserProfile | null
+  dailyNutrition: DailyNutrition | null
   loading: boolean
   error: string | null
   createProfile: (data: OnboardingData) => Promise<boolean>
   updateProfile: (data: Partial<UserProfile>) => Promise<boolean>
   refreshProfile: () => Promise<boolean>
+  refreshDailyNutrition: () => Promise<void>
   clearError: () => void
 }

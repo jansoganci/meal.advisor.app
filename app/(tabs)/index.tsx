@@ -23,7 +23,7 @@ import { getCurrentShoppingList } from '@/lib/shopping-list';
 export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { profile } = useProfile();
+  const { profile, dailyNutrition } = useProfile();
   const [currentShoppingList, setCurrentShoppingList] = useState<ShoppingList | null>(null);
 
   useEffect(() => {
@@ -54,11 +54,14 @@ export default function HomeScreen() {
         <StreakCard />
       </ThemedView>
       <WeekCalendarCard />
-      <CaloriesLeftCard />
+      <CaloriesLeftCard 
+        caloriesLeft={dailyNutrition?.caloriesLeft ?? 0}
+        totalCalories={dailyNutrition?.caloriesGoal ?? 2000}
+      />
       <ThemedView style={styles.macrosRow}>
-        <ProteinCard />
-        <CarbsCard />
-        <FatCard />
+        <ProteinCard proteinLeft={dailyNutrition?.proteinLeft ?? 0} />
+        <CarbsCard carbsLeft={dailyNutrition?.carbsLeft ?? 0} />
+        <FatCard fatLeft={dailyNutrition?.fatLeft ?? 0} />
       </ThemedView>
       <QuickMealButton onPress={() => router.push('/quickmeal')} />
       <PlanButtonsCard />

@@ -768,7 +768,22 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_daily_nutrition: {
+        Args: {
+          p_user_id: string
+          p_date?: string
+        }
+        Returns: {
+          calories_goal: number | null
+          protein_goal: number | null
+          carbs_goal: number | null
+          fat_goal: number | null
+          calories_consumed: number | null
+          protein_consumed: number | null
+          carbs_consumed: number | null
+          fat_consumed: number | null
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
